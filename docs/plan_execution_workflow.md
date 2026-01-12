@@ -197,7 +197,7 @@ Before considering the work complete:
 ## Example Workflow
 
 ```
-1. User: "Execute the plan at docs/features/shopping-cart/plan.md"
+1. User: "Execute the plan at docs/features/file-search/plan.md"
 
 2. Orchestrator: Launch code-writer agent with plan location
    → Agent implements models, services, schemas, APIs, migrations, tests
@@ -218,8 +218,8 @@ Before considering the work complete:
 5. Orchestrator: Delete existing code_review.md if present
 
 6. Orchestrator: Launch code-reviewer agent
-   → Specify plan path: docs/features/shopping-cart/plan.md
-   → Specify review output: docs/features/shopping-cart/code_review.md
+   → Specify plan path: docs/features/file-search/plan.md
+   → Specify review output: docs/features/file-search/code_review.md
    → Request review of unstaged changes
 
 7. Orchestrator: Review the code_review.md document

@@ -1,3 +1,4 @@
+
 # Sourcegraph MCP Server
 
 <p className="subtitle">

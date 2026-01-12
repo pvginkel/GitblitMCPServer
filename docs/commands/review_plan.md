@@ -143,7 +143,7 @@ State your confidence in the plan and the reasoning behind it, using `<confidenc
 
 1. **Assume wrong until proven**: hunt for violations of layering (API vs. service), transaction safety, test coverage, data lifecycle, metrics, shutdown coordination.
 2. **Quote evidence**: every claim or closure needs file:line quotes from the plan (and refs). Flag when refs contradict plan assumptions.
-3. **Focus on invariants**: ensure filtering, batching, or async work doesn’t corrupt inventory state, leave hanging migrations, or orphan S3 blobs/test data.
+3. **Focus on invariants**: ensure filtering, batching, or async work doesn't corrupt application state, leave hanging migrations, or orphan resources/test data.
 4. **Coverage is explicit**: if behavior is new/changed, require pytest scenarios, metrics instrumentation, and persistence hooks; reject “we’ll test later”.
 
 ## Final check

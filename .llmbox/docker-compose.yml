@@ -21,5 +21,6 @@ services:
       - .git:/work/GitblitMCPServer/.git:ro
       - ../GitblitSearchApiPlugin:/work/GitblitSearchApiPlugin:rw
       - ../GitblitSearchApiPlugin/.git:/work/GitblitSearchApiPlugin/.git:ro
+      - ../gitblit:/work/gitblit:ro
     # Required for Chromium
     shm_size: 1G
