@@ -246,19 +246,16 @@ Search commit history using Lucene index.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
+| `query` | string | Yes | - | Lucene search query |
 | `repos` | string | Yes | - | Comma-separated repository names |
-| `messageTerms` | string | No | - | Comma-separated terms to search in commit messages (OR logic) |
-| `authors` | string | No | - | Comma-separated author names (OR logic) |
+| `authors` | string | No | - | Comma-separated author names to filter by (OR logic) |
 | `branch` | string | No | - | Branch filter |
 | `count` | int | No | 25 | Max results (cap at 100) |
 
 **Implementation Notes:**
-- Require at least one of `messageTerms` or `authors`
-- Build Lucene query:
-  - Always include `type:commit`
-  - If `messageTerms`: `AND (term1 OR term2 OR ...)`
-  - If `authors`: `AND (author:name1 OR author:name2 OR ...)`
-  - If `branch`: `AND branch:"{branch}"`
+- Automatically prepend `type:commit` to query to search only commits
+- If `authors` provided, add `AND (author:name1 OR author:name2 OR ...)` to query
+- If `branch` provided, add `AND branch:"{branch}"` to query
 - Use existing `IGitblit.search()` method
 
 **Response:**

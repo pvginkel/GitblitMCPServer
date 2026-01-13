@@ -391,17 +391,16 @@ Searches for commits by message content, author, or code changes. Use this to fi
 ```json
 {
   "type": "object",
-  "required": ["repos"],
+  "required": ["query", "repos"],
   "properties": {
+    "query": {
+      "type": "string",
+      "description": "Search query. Supports Lucene syntax: exact phrases (\"foo bar\"), wildcards (foo*), AND/OR operators."
+    },
     "repos": {
       "type": "array",
       "items": { "type": "string" },
       "description": "Repository names to search (required)"
-    },
-    "messageTerms": {
-      "type": "array",
-      "items": { "type": "string" },
-      "description": "Terms to search for in commit messages. Multiple terms use OR logic."
     },
     "authors": {
       "type": "array",
@@ -461,13 +460,13 @@ Searches for commits by message content, author, or code changes. Use this to fi
 
 ```
 User: "Find commits mentioning 'bug fix' in myproject.git"
-Tool call: gb_commit_search(repos=["myproject.git"], messageTerms=["bug fix"])
+Tool call: gb_commit_search(query="bug fix", repos=["myproject.git"])
 
 User: "What has john.doe committed recently?"
-Tool call: gb_commit_search(repos=["project.git"], authors=["john.doe"])
+Tool call: gb_commit_search(query="*", repos=["project.git"], authors=["john.doe"])
 
 User: "Find commits about authentication"
-Tool call: gb_commit_search(repos=["api.git", "auth.git"], messageTerms=["auth", "login", "authentication"])
+Tool call: gb_commit_search(query="auth OR login OR authentication", repos=["api.git", "auth.git"])
 ```
 
 ---

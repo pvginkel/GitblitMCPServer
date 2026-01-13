@@ -203,13 +203,11 @@ Search commit history across repositories using Lucene.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
+| `query` | string | Yes | - | Lucene search query |
 | `repos` | string | Yes | - | Comma-separated repository names |
-| `messageTerms` | string | No | - | Comma-separated terms to search in commit messages (OR logic) |
 | `authors` | string | No | - | Comma-separated author names to filter by (OR logic) |
 | `branch` | string | No | - | Branch filter |
 | `count` | integer | No | 25 | Maximum results (max: 100) |
-
-At least one of `messageTerms` or `authors` must be provided.
 
 The search is automatically scoped to `type:commit`.
 
@@ -238,7 +236,7 @@ The search is automatically scoped to `type:commit`.
 #### Example
 
 ```bash
-curl "http://gitblit:8080/api/mcp-server/search/commits?repos=myproject.git&messageTerms=bug,fix&count=10"
+curl "http://gitblit:8080/api/mcp-server/search/commits?query=bug%20fix&repos=myproject.git&count=10"
 ```
 
 ---
@@ -270,7 +268,7 @@ The search endpoints support Gitblit's Lucene query syntax:
 query=error&pathPattern=*.java
 
 # Commits by john with "fix" in message
-messageTerms=fix&authors=john
+query=fix&authors=john
 
 # Complex query with Lucene syntax
 query="null pointer" AND exception
