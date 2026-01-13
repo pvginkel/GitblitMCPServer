@@ -143,7 +143,7 @@ def _register_tools(mcp: FastMCP) -> None:
             contextLines=contextLines,
         )
         _check_error(result)
-        return result.model_dump()
+        return result.model_dump(exclude={"query"})
 
     @mcp.tool()  # type: ignore[misc, untyped-decorator]
     def commit_search(
@@ -173,4 +173,4 @@ def _register_tools(mcp: FastMCP) -> None:
             query=query, repos=repos, authors=authors, branch=branch, count=count
         )
         _check_error(result)
-        return result.model_dump()
+        return result.model_dump(exclude={"query"})

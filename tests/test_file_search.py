@@ -117,3 +117,36 @@ def test_file_search_boolean_operators(client: GitblitClient) -> None:
 
     assert isinstance(result, FileSearchResponse)
     assert isinstance(result.results, list)
+
+
+def test_file_search_wildcard_query(client: GitblitClient, test_repo: str) -> None:
+    """Test file search with wildcard query (browse mode)."""
+    # Wildcard query requires at least one filter (repos or pathPattern)
+    result = client.search_files(query="*", repos=[test_repo], count=10)
+
+    assert isinstance(result, FileSearchResponse)
+    assert isinstance(result.totalCount, int)
+    assert isinstance(result.results, list)
+
+    # Should return results for the repo
+    assert result.totalCount > 0
+    assert len(result.results) > 0
+
+    # Validate result structure
+    for search_result in result.results:
+        assert search_result.repository == test_repo
+        assert search_result.path
+        # Wildcard queries return empty chunks (file listing mode)
+        assert isinstance(search_result.chunks, list)
+
+
+def test_file_search_wildcard_with_path_pattern(client: GitblitClient, test_repo: str) -> None:
+    """Test wildcard file search with path pattern filter."""
+    result = client.search_files(query="*", repos=[test_repo], path_pattern="*.cs", count=10)
+
+    assert isinstance(result, FileSearchResponse)
+    assert isinstance(result.results, list)
+
+    # All results should match the path pattern
+    for search_result in result.results:
+        assert search_result.path.endswith(".cs")

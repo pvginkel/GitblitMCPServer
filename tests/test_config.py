@@ -40,8 +40,11 @@ def test_config_missing_url(monkeypatch: pytest.MonkeyPatch) -> None:
 
     config._config = None
 
-    with pytest.raises(ConfigurationError) as exc_info:
-        config.get_config()
+    # Patch load_dotenv to prevent it from loading .env file
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setattr("gitblit_mcp_server.config.load_dotenv", lambda: None)
+        with pytest.raises(ConfigurationError) as exc_info:
+            config.get_config()
 
     assert "GITBLIT_URL" in str(exc_info.value)
     assert "required" in str(exc_info.value).lower()

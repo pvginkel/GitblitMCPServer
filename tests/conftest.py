@@ -3,9 +3,11 @@
 import os
 from collections.abc import Generator
 from pathlib import Path
+from typing import Any
 
 import pytest
 from dotenv import load_dotenv
+
 from gitblit_mcp_server import client as client_module
 from gitblit_mcp_server import config as config_module
 from gitblit_mcp_server import server as server_module
@@ -57,4 +59,36 @@ def test_repo() -> str:
     This repository should exist on the test server for file/commit operations.
     Override this with an environment variable if needed.
     """
-    return os.getenv("TEST_REPO", "test.git")
+    return os.getenv("TEST_REPO", "netide/netide.git")
+
+
+@pytest.fixture(scope="session")
+def test_file() -> str:
+    """Return a known test file path.
+
+    This file should exist in the test repository.
+    """
+    return os.getenv("TEST_FILE", "License.txt")
+
+
+@pytest.fixture(scope="session")
+def test_directory() -> str:
+    """Return a known test directory path.
+
+    This directory should exist in the test repository.
+    """
+    return os.getenv("TEST_DIRECTORY", "NetIde.Project")
+
+
+# Markers for test categorization
+def pytest_configure(config: Any) -> None:
+    """Register custom pytest markers."""
+    config.addinivalue_line(
+        "markers", "integration: marks tests as integration tests (require live server)"
+    )
+    config.addinivalue_line(
+        "markers", "unit: marks tests as unit tests (no external dependencies)"
+    )
+    config.addinivalue_line(
+        "markers", "slow: marks tests as slow running"
+    )
