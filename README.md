@@ -2,159 +2,92 @@
 
 A Model Context Protocol (MCP) server that provides AI assistants with access to Gitblit-hosted Git repositories.
 
+> **Warning**
+>
+> **This project is experimental and provided as-is. Use at your own risk.**
+>
+> This MCP server requires the [GitblitMCPSupportPlugin](https://github.com/pvginkel/GitblitMCPSupportPlugin) to be installed on your Gitblit instance.
+>
+> **Important architectural note:** This Python-based MCP server exists as a proof-of-concept. The recommended long-term approach would be to integrate MCP support directly into Gitblit's Java codebase using a [Java MCP SDK](https://modelcontextprotocol.io/sdk/java/mcp-overview). This would eliminate the need for a separate service and provide a more maintainable solution. This project may be deprecated if native MCP support is added to Gitblit.
+
 ## Overview
 
-Gitblit MCP Server is a thin protocol adapter that translates MCP tool calls into HTTP requests to the Gitblit Search API Plugin. It enables AI assistants to browse repositories, read files, and search code and commit history hosted on Gitblit instances.
+Gitblit MCP Server is a thin protocol adapter that translates MCP tool calls into HTTP requests to the GitblitMCPSupportPlugin. It enables AI assistants to:
 
-## Features
-
-- **Repository Discovery**: List and search available repositories
-- **File Browsing**: Navigate directory structures and list files within repositories
-- **File Content Access**: Read file contents with support for line ranges and revisions
-- **File Search**: Full-text search across file contents using Lucene
-- **Commit Search**: Search commit history by message content and metadata
+- **Browse repositories**: List and search available repositories
+- **Navigate files**: Browse directory structures and list files
+- **Read content**: Access file contents with line range and revision support
+- **Search code**: Full-text search across file contents using Lucene
+- **Search commits**: Query commit history by message and metadata
 
 ## Requirements
 
-- Python 3.10 or higher
-- Poetry for dependency management
-- Gitblit instance with the Search API Plugin installed and running
+- Gitblit instance with [GitblitMCPSupportPlugin](https://github.com/pvginkel/GitblitMCPSupportPlugin) installed
+- Python 3.10+ (for local installation) or Docker
 
 ## Installation
 
-1. Clone the repository:
+### Docker (Recommended)
+
 ```bash
-git clone <repository-url>
+docker build -t gitblit-mcp-server .
+docker run -d \
+  -e GITBLIT_URL=http://your-gitblit-host:8080 \
+  -p 8000:8000 \
+  gitblit-mcp-server
+```
+
+### Local Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/pvginkel/GitblitMCPServer.git
 cd GitblitMCPServer
-```
 
-2. Install dependencies using Poetry:
-```bash
+# Install dependencies
 poetry install
-```
 
-3. Configure the server by creating a `.env` file (copy from `.env.example`):
-```bash
+# Configure
 cp .env.example .env
-```
+# Edit .env with your settings
 
-4. Edit `.env` and set your Gitblit URL:
-```env
-GITBLIT_URL=http://10.1.2.3:8080
-```
-
-## Usage
-
-Start the MCP server:
-
-```bash
+# Run
 poetry run python -m gitblit_mcp_server
 ```
 
-The server will:
-- Validate configuration on startup
-- Display connection information
-- Run as an MCP server listening on stdio for protocol messages
-
 ## Configuration
 
-The server is configured via environment variables (can be set in `.env` file):
+Configure via environment variables or a `.env` file:
 
-| Variable | Required | Description | Example |
-|----------|----------|-------------|---------|
-| `GITBLIT_URL` | Yes | Base URL of Gitblit instance | `http://10.1.2.3:8080` |
+| Variable | Required | Default | Description |
+|----------|----------|---------|-------------|
+| `GITBLIT_URL` | Yes | - | Base URL of your Gitblit instance (e.g., `http://10.1.2.3:8080`) |
+| `MCP_PORT` | No | `8000` | Port for the MCP server HTTP endpoint |
+| `MCP_HOST` | No | `0.0.0.0` | Host to bind to (use `127.0.0.1` for local-only access) |
+| `MCP_PATH_PREFIX` | No | - | Path prefix for reverse proxy setups (e.g., `/api/mcp`) |
 
 ## MCP Tools
 
-The server exposes these MCP tools:
-
-### list_repos
-List repositories available in the Gitblit instance.
-
-**Parameters:**
-- `query` (optional): Search query to filter repositories by name
-- `limit` (optional): Maximum results to return (default: 50)
-- `after` (optional): Pagination cursor
-
-### list_files
-List files and directories in a repository path.
-
-**Parameters:**
-- `repo` (required): Repository name (e.g., 'team/project.git')
-- `path` (optional): Directory path within repository (default: root)
-- `revision` (optional): Branch, tag, or commit SHA (default: HEAD)
-
-### read_file
-Read the content of a file from a repository.
-
-**Parameters:**
-- `repo` (required): Repository name
-- `path` (required): File path within repository
-- `revision` (optional): Branch, tag, or commit SHA (default: HEAD)
-- `startLine` (optional): 1-based starting line number
-- `endLine` (optional): 1-based ending line number (inclusive)
-
-**Note:** Files larger than 128KB will return an error.
-
-### file_search
-Search for content within files across repositories.
-
-**Parameters:**
-- `query` (required): Search query (supports Lucene syntax)
-- `repos` (optional): Repository names to search (default: all)
-- `pathPattern` (optional): File path pattern filter (e.g., '*.java')
-- `branch` (optional): Branch filter (e.g., 'refs/heads/main')
-- `count` (optional): Maximum results (default: 25)
-- `contextLines` (optional): Lines of context around matches (default: 100)
-
-### commit_search
-Search commit history across repositories.
-
-**Parameters:**
-- `query` (required): Search query (supports Lucene syntax)
-- `repos` (required): Repository names to search
-- `authors` (optional): Filter by author names
-- `branch` (optional): Branch filter
-- `count` (optional): Maximum results (default: 25)
-
-## Development
-
-### Running Tests
-
-Run the test suite against a live Gitblit server:
-
-```bash
-# Configure test server URL in tests/.env.test
-poetry run pytest
-```
-
-Tests are written to run against a live Gitblit server at `http://10.1.2.3:8080` by default. Update `tests/.env.test` to point to your test server.
-
-### Code Quality
-
-Run linting and type checking:
-
-```bash
-# Run ruff linter
-poetry run ruff check .
-
-# Run mypy type checker
-poetry run mypy src
-```
+| Tool | Description |
+|------|-------------|
+| `list_repos` | List repositories matching an optional search query |
+| `list_files` | List files and directories at a repository path |
+| `read_file` | Read file contents (supports line ranges, max 128KB) |
+| `file_search` | Full-text search across file contents |
+| `commit_search` | Search commit history by message/metadata |
 
 ## Architecture
 
 ```
 ┌─────────────────┐     MCP Protocol      ┌─────────────────────┐
 │   MCP Client    │◄────────────────────►│  Gitblit MCP Server │
-│  (AI Assistant) │                       │    (Python/FastMCP) │
+│  (AI Assistant) │                       │       (Python)      │
 └─────────────────┘                       └──────────┬──────────┘
                                                      │ HTTP/JSON
                                                      ▼
                                           ┌─────────────────────┐
-                                          │  Gitblit Search     │
-                                          │   API Plugin        │
-                                          │     (Java)          │
+                                          │ GitblitMCPSupport   │
+                                          │      Plugin         │
                                           └──────────┬──────────┘
                                                      │
                                                      ▼
@@ -164,38 +97,18 @@ poetry run mypy src
                                           └─────────────────────┘
 ```
 
-The MCP server is a stateless protocol adapter with no business logic - all operations are delegated to the Gitblit Search API Plugin.
+## Development
 
-## Project Structure
+```bash
+# Run tests (requires configured Gitblit instance)
+poetry run pytest
 
+# Lint
+poetry run ruff check .
+
+# Type check
+poetry run mypy src
 ```
-GitblitMCPServer/
-├── src/gitblit_mcp_server/     # Python source code
-│   ├── __init__.py             # Package initialization
-│   ├── __main__.py             # Entry point
-│   ├── server.py               # FastMCP server setup
-│   ├── config.py               # Configuration management
-│   ├── client.py               # HTTP client for Search API
-│   ├── schemas.py              # Pydantic models
-│   └── tools/                  # MCP tool implementations
-│       ├── list_repos.py
-│       ├── list_files.py
-│       ├── read_file.py
-│       ├── file_search.py
-│       └── commit_search.py
-├── tests/                      # Pytest tests
-├── docs/                       # Documentation
-├── pyproject.toml             # Poetry configuration
-└── .env.example               # Environment configuration template
-```
-
-## Contributing
-
-Contributions are welcome! Please ensure:
-
-1. Code passes ruff linting: `poetry run ruff check .`
-2. Code passes mypy type checking: `poetry run mypy src`
-3. All tests pass: `poetry run pytest`
 
 ## License
 
@@ -203,10 +116,4 @@ See LICENSE file for details.
 
 ## Related Projects
 
-- **Gitblit Search API Plugin**: Companion Java plugin that provides the REST API backend (located in `../GitblitSearchApiPlugin/`)
-
-## Documentation
-
-- `docs/product_brief.md` - Product overview
-- `docs/mcp_api.md` - MCP tool specifications
-- `docs/search_plugin_api.md` - Search Plugin REST API specification
+- [GitblitMCPSupportPlugin](https://github.com/pvginkel/GitblitMCPSupportPlugin) - Required Gitblit plugin providing the REST API backend
