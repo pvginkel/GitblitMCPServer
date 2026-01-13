@@ -1,0 +1,72 @@
+[tool.poetry]
+name = "gitblit-mcp-server"
+version = "0.1.0"
+description = "MCP server for Gitblit-hosted Git repositories"
+authors = ["Gitblit MCP Team"]
+readme = "README.md"
+packages = [{include = "gitblit_mcp_server", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+fastmcp = "^2.14.3"
+httpx = "^0.28.1"
+python-dotenv = "^1.0.0"
+pydantic = "^2.5.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-asyncio = "^0.23.0"
+ruff = "^0.1.0"
+mypy = "^1.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "N",   # pep8-naming
+    "UP",  # pyupgrade
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+]
+ignore = [
+    "N815",  # Allow mixedCase in class scope (Pydantic models match API schema)
+    "N803",  # Allow mixedCase argument names (match MCP API specification)
+    "E501",  # Allow lines slightly over 100 chars for string literals
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = false
+
+# Allow third-party imports without stubs
+[[tool.mypy.overrides]]
+module = ["fastmcp", "httpx", "dotenv", "pydantic"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
