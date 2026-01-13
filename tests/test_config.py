@@ -78,40 +78,53 @@ def test_config_https_url(monkeypatch: pytest.MonkeyPatch) -> None:
     assert cfg.api_base_url == "https://gitblit.example.com/api/mcp-server"
 
 
-def test_config_mcp_path_default(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Test default MCP path is /sse."""
+def test_config_mcp_path_prefix_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test default MCP path prefix is empty."""
     monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
-    monkeypatch.delenv("MCP_PATH", raising=False)
+    monkeypatch.delenv("MCP_PATH_PREFIX", raising=False)
 
     from gitblit_mcp_server import config
 
     config._config = None
 
     cfg = config.get_config()
-    assert cfg.mcp_path == "/sse"
+    assert cfg.mcp_path_prefix == ""
 
 
-def test_config_mcp_path_custom(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Test custom MCP path from environment."""
+def test_config_mcp_path_prefix_custom(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test custom MCP path prefix from environment."""
     monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
-    monkeypatch.setenv("MCP_PATH", "/api/mcp/sse")
+    monkeypatch.setenv("MCP_PATH_PREFIX", "/api/mcp")
 
     from gitblit_mcp_server import config
 
     config._config = None
 
     cfg = config.get_config()
-    assert cfg.mcp_path == "/api/mcp/sse"
+    assert cfg.mcp_path_prefix == "/api/mcp"
 
 
-def test_config_mcp_path_adds_leading_slash(monkeypatch: pytest.MonkeyPatch) -> None:
+def test_config_mcp_path_prefix_adds_leading_slash(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that leading slash is added if missing."""
     monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
-    monkeypatch.setenv("MCP_PATH", "api/mcp/sse")
+    monkeypatch.setenv("MCP_PATH_PREFIX", "api/mcp")
 
     from gitblit_mcp_server import config
 
     config._config = None
 
     cfg = config.get_config()
-    assert cfg.mcp_path == "/api/mcp/sse"
+    assert cfg.mcp_path_prefix == "/api/mcp"
+
+
+def test_config_mcp_path_prefix_strips_trailing_slash(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that trailing slash is stripped from prefix."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
+    monkeypatch.setenv("MCP_PATH_PREFIX", "/api/mcp/")
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    cfg = config.get_config()
+    assert cfg.mcp_path_prefix == "/api/mcp"

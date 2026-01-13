@@ -15,13 +15,14 @@ def main() -> None:
         config = get_config()
 
         # Configure SSE paths before starting server
-        fastmcp.settings.sse_path = config.mcp_path
-        fastmcp.settings.message_path = config.mcp_path.rstrip("/") + "/messages/"
+        # Read defaults first, then prepend prefix
+        fastmcp.settings.sse_path = config.mcp_path_prefix + fastmcp.settings.sse_path
+        fastmcp.settings.message_path = config.mcp_path_prefix + fastmcp.settings.message_path
 
         print("Gitblit MCP Server starting...", file=sys.stderr)
         print(f"Backend: {config.api_base_url}", file=sys.stderr)
         print(
-            f"MCP server: http://{config.mcp_host}:{config.mcp_port}{config.mcp_path}",
+            f"MCP server: http://{config.mcp_host}:{config.mcp_port}{fastmcp.settings.sse_path}",
             file=sys.stderr,
         )
 

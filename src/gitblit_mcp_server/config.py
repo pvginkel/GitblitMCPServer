@@ -50,11 +50,12 @@ class Config:
         # MCP server host (default 0.0.0.0)
         self.mcp_host = os.getenv("MCP_HOST", "0.0.0.0")
 
-        # MCP SSE path (default /sse)
-        mcp_path = os.getenv("MCP_PATH", "/sse")
-        if not mcp_path.startswith("/"):
-            mcp_path = "/" + mcp_path
-        self.mcp_path = mcp_path
+        # MCP path prefix (default empty, meaning /sse and /messages/)
+        # Set to e.g. "/api/mcp" to get /api/mcp/sse and /api/mcp/messages/
+        mcp_path_prefix = os.getenv("MCP_PATH_PREFIX", "")
+        if mcp_path_prefix and not mcp_path_prefix.startswith("/"):
+            mcp_path_prefix = "/" + mcp_path_prefix
+        self.mcp_path_prefix = mcp_path_prefix.rstrip("/")
 
     @property
     def api_base_url(self) -> str:
