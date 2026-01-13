@@ -50,6 +50,12 @@ class Config:
         # MCP server host (default 0.0.0.0)
         self.mcp_host = os.getenv("MCP_HOST", "0.0.0.0")
 
+        # MCP SSE path (default /sse)
+        mcp_path = os.getenv("MCP_PATH", "/sse")
+        if not mcp_path.startswith("/"):
+            mcp_path = "/" + mcp_path
+        self.mcp_path = mcp_path
+
     @property
     def api_base_url(self) -> str:
         """Return the base URL for API endpoints."""

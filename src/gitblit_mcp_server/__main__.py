@@ -2,6 +2,8 @@
 
 import sys
 
+import fastmcp  # type: ignore
+
 from .config import ConfigurationError, get_config
 from .server import get_server
 
@@ -11,10 +13,15 @@ def main() -> None:
     try:
         # Validate configuration on startup
         config = get_config()
+
+        # Configure SSE paths before starting server
+        fastmcp.settings.sse_path = config.mcp_path
+        fastmcp.settings.message_path = config.mcp_path.rstrip("/") + "/messages/"
+
         print("Gitblit MCP Server starting...", file=sys.stderr)
         print(f"Backend: {config.api_base_url}", file=sys.stderr)
         print(
-            f"MCP server: http://{config.mcp_host}:{config.mcp_port}/sse",
+            f"MCP server: http://{config.mcp_host}:{config.mcp_port}{config.mcp_path}",
             file=sys.stderr,
         )
 

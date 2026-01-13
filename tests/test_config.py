@@ -76,3 +76,42 @@ def test_config_https_url(monkeypatch: pytest.MonkeyPatch) -> None:
     cfg = config.get_config()
     assert cfg.gitblit_url == "https://gitblit.example.com"
     assert cfg.api_base_url == "https://gitblit.example.com/api/mcp-server"
+
+
+def test_config_mcp_path_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test default MCP path is /sse."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
+    monkeypatch.delenv("MCP_PATH", raising=False)
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    cfg = config.get_config()
+    assert cfg.mcp_path == "/sse"
+
+
+def test_config_mcp_path_custom(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test custom MCP path from environment."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
+    monkeypatch.setenv("MCP_PATH", "/api/mcp/sse")
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    cfg = config.get_config()
+    assert cfg.mcp_path == "/api/mcp/sse"
+
+
+def test_config_mcp_path_adds_leading_slash(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that leading slash is added if missing."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
+    monkeypatch.setenv("MCP_PATH", "api/mcp/sse")
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    cfg = config.get_config()
+    assert cfg.mcp_path == "/api/mcp/sse"
