@@ -6,7 +6,7 @@ Build the MVP version of the Gitblit MCP Server - a Python/FastMCP server that p
 
 ## Functional Requirements
 
-The MCP server is a thin protocol adapter that translates MCP tool calls into HTTP requests to the Gitblit Search API Plugin (already deployed at `http://10.1.2.3:8080`).
+The MCP server is a thin protocol adapter that translates MCP tool calls into HTTP requests to the Gitblit Search API Plugin (already deployed at `http://10.1.2.3`).
 
 ### MCP Tools to Implement
 
@@ -21,11 +21,11 @@ The MCP server is a thin protocol adapter that translates MCP tool calls into HT
 ### Configuration
 
 - Use environment variables with `.env` file support
-- `GITBLIT_URL` - Base URL of Gitblit instance (e.g., `http://10.1.2.3:8080`)
+- `GITBLIT_URL` - Base URL of Gitblit instance (e.g., `http://10.1.2.3`)
 
 ### Testing
 
-- Write pytest tests against the live test server at `http://10.1.2.3:8080`
+- Write pytest tests against the live test server at `http://10.1.2.3`
 - Use `.env` file to provide the server URL
 - Tests should cover success paths, error conditions, and edge cases
 

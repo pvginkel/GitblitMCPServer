@@ -23,7 +23,7 @@ def gb_commit_search(
                wildcards (foo*), AND/OR operators.
         repos: Repository names to search (required)
         authors: Filter by author names. Multiple authors use OR logic.
-        branch: Filter by branch (e.g., 'refs/heads/main')
+        branch: Filter by branch (e.g., 'refs/heads/main'). If omitted, searches only each repository's default branch.
         count: Maximum number of results. Defaults to 25.
 
     Returns:

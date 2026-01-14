@@ -39,7 +39,7 @@ The MCP Server MVP implementation is well-executed and adheres closely to the ap
 - Plan Section 1a "Implement gb_commit_search MCP tool" ↔ `src/gitblit_mcp_server/tools/commit_search.py:8-35` — Implemented with repos/authors/branch filters
 - Plan Section 1a "GITBLIT_URL environment variable" ↔ `src/gitblit_mcp_server/config.py:24-39` — Validated with http/https scheme check
 - Plan Section 1a "Server can be started with poetry run python -m gitblit_mcp_server" ↔ `src/gitblit_mcp_server/__main__.py:9-28` — Entry point implemented with config validation
-- Plan Section 13 "Test against live server at http://10.1.2.3:8080" ↔ `tests/conftest.py:14-19` and `tests/.env.test:4` — Tests configured for live server
+- Plan Section 13 "Test against live server at http://10.1.2.3" ↔ `tests/conftest.py:14-19` and `tests/.env.test:4` — Tests configured for live server
 - Plan Section 2 "HTTP client for Search API Plugin" ↔ `src/gitblit_mcp_server/client.py:19-249` — Complete implementation with all 5 endpoint methods
 - Plan Section 2 "Pydantic response models" ↔ `src/gitblit_mcp_server/schemas.py:1-116` — All response/error schemas defined
 
@@ -496,7 +496,7 @@ The MCP Server MVP implementation is well-executed and adheres closely to the ap
 
 ---
 
-- Question: What test repositories and file structure exist on http://10.1.2.3:8080 test server?
+- Question: What test repositories and file structure exist on http://10.1.2.3 test server?
 - Why it matters: Tests skip scenarios when data missing rather than asserting against known structure. Cannot verify directory trailing slash format, line number format, chunk structure without known test data.
 - Desired answer: Documentation of test data setup (e.g., tests/TEST_DATA.md) listing available repositories, directory structures, known files with line counts, indexed content for search tests.
 

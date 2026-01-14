@@ -83,9 +83,9 @@
   - URL format validation: `src/gitblit_mcp_server/config.py:32-36`
   - Error handling: ConfigurationError raised if missing or invalid (lines 26-36)
   - Tests: `tests/test_config.py:8-75` (comprehensive config tests)
-- **Details:** GITBLIT_URL is required, validated to be http/https URL, trailing slashes removed, converted to API base URL at `/api/mcp-server`.
+- **Details:** GITBLIT_URL is required, validated to be http/https URL, trailing slashes removed, converted to API base URL at `/api/.mcp-internal`.
 
-### 8. Write pytest tests against the live test server at http://10.1.2.3:8080
+### 8. Write pytest tests against the live test server at http://10.1.2.3
 **STATUS: PASS**
 - **Evidence:**
   - Test files: 6 test modules implemented
@@ -103,7 +103,7 @@
 **STATUS: PASS**
 - **Evidence:**
   - Test env file: `tests/.env.test:1-7`
-  - Content: `GITBLIT_URL=http://10.1.2.3:8080` and `TEST_REPO=netide/netide.git`
+  - Content: `GITBLIT_URL=http://10.1.2.3` and `TEST_REPO=netide/netide.git`
   - Conftest loading: `tests/conftest.py:14-19`
 - **Details:** tests/.env.test is automatically loaded as session fixture before tests run.
 

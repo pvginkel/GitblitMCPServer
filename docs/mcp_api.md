@@ -287,7 +287,7 @@ Searches file contents (blobs) using Gitblit's Lucene index. Returns matching co
     },
     "branch": {
       "type": "string",
-      "description": "Filter by branch (e.g., 'refs/heads/main')"
+      "description": "Filter by branch (e.g., 'refs/heads/main'). If omitted, searches only each repository's default branch."
     },
     "count": {
       "type": "integer",
@@ -295,7 +295,7 @@ Searches file contents (blobs) using Gitblit's Lucene index. Returns matching co
     },
     "contextLines": {
       "type": "integer",
-      "description": "Number of context lines to include around each match. Defaults to 100."
+      "description": "Number of context lines to include around each match. Defaults to 10, max 200."
     }
   }
 }
@@ -409,7 +409,7 @@ Searches for commits by message content, author, or code changes. Use this to fi
     },
     "branch": {
       "type": "string",
-      "description": "Filter by branch (e.g., 'refs/heads/main')"
+      "description": "Filter by branch (e.g., 'refs/heads/main'). If omitted, searches only each repository's default branch."
     },
     "count": {
       "type": "integer",

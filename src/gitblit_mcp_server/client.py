@@ -187,7 +187,7 @@ class GitblitClient:
         path_pattern: str | None = None,
         branch: str | None = None,
         count: int = 25,
-        context_lines: int = 100,
+        context_lines: int = 10,
     ) -> FileSearchResponse | ErrorResponse:
         """Search file contents.
 

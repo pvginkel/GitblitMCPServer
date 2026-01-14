@@ -71,11 +71,11 @@ The following REST endpoints must be implemented in the Gitblit Search API Plugi
 
 | Endpoint | MCP Tool | Description |
 |----------|----------|-------------|
-| `GET /api/mcp-server/repos` | `gb_list_repos` | List repositories |
-| `GET /api/mcp-server/files` | `gb_list_files` | List directory contents |
-| `GET /api/mcp-server/file` | `gb_read_file` | Read file content |
-| `GET /api/mcp-server/search/files` | `gb_file_search` | Search file contents |
-| `GET /api/mcp-server/search/commits` | `gb_commit_search` | Search commits |
+| `GET /api/.mcp-internal/repos` | `gb_list_repos` | List repositories |
+| `GET /api/.mcp-internal/files` | `gb_list_files` | List directory contents |
+| `GET /api/.mcp-internal/file` | `gb_read_file` | Read file content |
+| `GET /api/.mcp-internal/search/files` | `gb_file_search` | Search file contents |
+| `GET /api/.mcp-internal/search/commits` | `gb_commit_search` | Search commits |
 
 ## Technical Constraints
 

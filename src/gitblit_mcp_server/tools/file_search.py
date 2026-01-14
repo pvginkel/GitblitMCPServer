@@ -11,7 +11,7 @@ def gb_file_search(
     pathPattern: str | None = None,
     branch: str | None = None,
     count: int = 25,
-    contextLines: int = 100,
+    contextLines: int = 10,
 ) -> FileSearchResponse | ErrorResponse:
     """Search for content within files across repositories.
 
@@ -24,9 +24,9 @@ def gb_file_search(
                wildcards (foo*), AND/OR operators.
         repos: Repository names to search. If empty, searches all accessible repositories.
         pathPattern: Filter by file path pattern (e.g., '*.java', 'src/*.py')
-        branch: Filter by branch (e.g., 'refs/heads/main')
+        branch: Filter by branch (e.g., 'refs/heads/main'). If omitted, searches only each repository's default branch.
         count: Maximum number of results to return. Defaults to 25.
-        contextLines: Number of context lines to include around each match. Defaults to 100.
+        contextLines: Number of context lines to include around each match. Defaults to 10, max 200.
 
     Returns:
         FileSearchResponse with search results and chunks, or ErrorResponse on error.

@@ -1,8 +1,9 @@
 """FastMCP server setup and tool registration."""
 
-from typing import Any
+from typing import Annotated, Any
 
 from fastmcp import FastMCP  # type: ignore
+from pydantic import Field
 
 from .schemas import ErrorResponse, GitblitAPIError
 from .tools.commit_search import gb_commit_search
@@ -30,75 +31,139 @@ def get_server() -> FastMCP:
     return _mcp
 
 
+# Tool descriptions - kept concise to minimize token usage
+# See docs/sourcegraph_mcp_tools.json for the comprehensive style reference
+
+_LIST_REPOS_DESCRIPTION = """
+Lists repositories in the Gitblit instance.
+
+Behavior:
+- Query uses case-insensitive substring matching on repository names
+- If query is omitted, returns all accessible repositories
+- Results are sorted alphabetically by name
+- Supports cursor-based pagination via 'after' parameter
+""".strip()
+
+_LIST_FILES_DESCRIPTION = """
+Lists files and directories at a path within a repository.
+
+Behavior:
+- If path is omitted, lists the repository root
+- If revision is omitted, uses HEAD of the default branch
+- Directories are listed first, then files
+- Directory paths end with '/'
+""".strip()
+
+_READ_FILE_DESCRIPTION = """
+Reads file content from a repository. Returns content with line numbers prefixed (e.g., "1: line\\n2: line").
+
+Behavior:
+- If revision is omitted, reads from HEAD of the default branch
+- If startLine/endLine are omitted, reads the entire file
+- Line numbers are 1-indexed
+- Maximum file size is 128KB; larger files return an error
+""".strip()
+
+_FILE_SEARCH_DESCRIPTION = """
+Searches file contents across repositories using Gitblit's Lucene index. Returns matching code snippets with context.
+
+Behavior:
+- Supports Lucene syntax: exact phrases ("foo"), wildcards (foo*), AND/OR operators
+- If repos is omitted, searches all accessible repositories
+- If branch is omitted, searches only each repository's default branch (avoids duplicate results)
+- If pathPattern is omitted, searches all file types
+- If count is omitted, defaults to 25 (max: 100)
+- If contextLines is omitted, defaults to 10 (max: 200)
+""".strip()
+
+_COMMIT_SEARCH_DESCRIPTION = """
+Searches commit history across repositories using Gitblit's Lucene index.
+
+Behavior:
+- Supports Lucene syntax: exact phrases ("foo"), wildcards (foo*), AND/OR operators
+- repos parameter is required; must specify at least one repository
+- If authors is specified, multiple authors use OR logic
+- If branch is omitted, searches only each repository's default branch (avoids duplicate results)
+- If count is omitted, defaults to 25 (max: 100)
+""".strip()
+
+
 def _register_tools(mcp: FastMCP) -> None:
     """Register all MCP tools with the server."""
 
-    @mcp.tool()  # type: ignore[misc, untyped-decorator]
+    @mcp.tool(description=_LIST_REPOS_DESCRIPTION)  # type: ignore[misc, untyped-decorator]
     def list_repos(
-        query: str | None = None, limit: int = 50, after: str | None = None
+        query: Annotated[
+            str | None,
+            Field(
+                description="Filter repositories by name (case-insensitive substring match). Omit to return all repositories."
+            ),
+        ] = None,
+        limit: Annotated[
+            int,
+            Field(description="Maximum repositories to return. Default: 50, max: 100."),
+        ] = 50,
+        after: Annotated[
+            str | None,
+            Field(
+                description="Pagination cursor. Use 'endCursor' from previous response to get next page."
+            ),
+        ] = None,
     ) -> dict[str, Any]:
-        """List repositories available in the Gitblit instance.
-
-        Lists repositories that match a search query. Use this tool to discover
-        repositories or resolve partial repository names to full names.
-
-        Args:
-            query: Optional search query to filter repositories by name
-            limit: Maximum number of repositories to return (default: 50)
-            after: Pagination cursor for fetching results after this point
-
-        Returns:
-            Dictionary with repositories array and pagination info
-        """
         result = gb_list_repos(query=query, limit=limit, after=after)
         _check_error(result)
         return result.model_dump()
 
-    @mcp.tool()  # type: ignore[misc, untyped-decorator]
+    @mcp.tool(description=_LIST_FILES_DESCRIPTION)  # type: ignore[misc, untyped-decorator]
     def list_files(
-        repo: str, path: str = "", revision: str | None = None
+        repo: Annotated[
+            str,
+            Field(description="Repository name with .git suffix (e.g., 'team/project.git')."),
+        ],
+        path: Annotated[
+            str,
+            Field(
+                description="Directory path relative to root, no leading slash. Omit or use empty string for root."
+            ),
+        ] = "",
+        revision: Annotated[
+            str | None,
+            Field(
+                description="Branch, tag, or commit SHA. Omit to use HEAD of default branch."
+            ),
+        ] = None,
     ) -> dict[str, Any]:
-        """List files and directories in a repository path.
-
-        Lists the files and subdirectories at a given path within a repository.
-        Directories are indicated with a trailing slash.
-
-        Args:
-            repo: Repository name (e.g., 'team/project.git')
-            path: Directory path within repository (default: root)
-            revision: Branch, tag, or commit SHA (default: HEAD)
-
-        Returns:
-            Dictionary with files array
-        """
         result = gb_list_files(repo=repo, path=path, revision=revision)
         _check_error(result)
         return result.model_dump()
 
-    @mcp.tool()  # type: ignore[misc, untyped-decorator]
+    @mcp.tool(description=_READ_FILE_DESCRIPTION)  # type: ignore[misc, untyped-decorator]
     def read_file(
-        repo: str,
-        path: str,
-        revision: str | None = None,
-        startLine: int | None = None,
-        endLine: int | None = None,
+        repo: Annotated[
+            str,
+            Field(description="Repository name with .git suffix (e.g., 'team/project.git')."),
+        ],
+        path: Annotated[
+            str,
+            Field(
+                description="File path relative to root, no leading slash (e.g., 'src/main.py')."
+            ),
+        ],
+        revision: Annotated[
+            str | None,
+            Field(
+                description="Branch, tag, or commit SHA. Omit to use HEAD of default branch."
+            ),
+        ] = None,
+        startLine: Annotated[
+            int | None,
+            Field(description="1-based starting line. Omit to start from line 1."),
+        ] = None,
+        endLine: Annotated[
+            int | None,
+            Field(description="1-based ending line (inclusive). Omit to read to end of file."),
+        ] = None,
     ) -> dict[str, Any]:
-        """Read the content of a file from a repository.
-
-        Reads and returns the content of a file at a specific path and revision.
-        Supports line range parameters for large files. Files larger than 128KB
-        will return an error.
-
-        Args:
-            repo: Repository name (e.g., 'team/project.git')
-            path: File path within the repository
-            revision: Branch, tag, or commit SHA (default: HEAD)
-            startLine: 1-based line number to start reading from
-            endLine: 1-based line number to stop reading at (inclusive)
-
-        Returns:
-            Dictionary with file content (line-numbered)
-        """
         result = gb_read_file(
             repo=repo,
             path=path,
@@ -109,31 +174,41 @@ def _register_tools(mcp: FastMCP) -> None:
         _check_error(result)
         return result.model_dump()
 
-    @mcp.tool()  # type: ignore[misc, untyped-decorator]
+    @mcp.tool(description=_FILE_SEARCH_DESCRIPTION)  # type: ignore[misc, untyped-decorator]
     def file_search(
-        query: str,
-        repos: list[str] | None = None,
-        pathPattern: str | None = None,
-        branch: str | None = None,
-        count: int = 25,
-        contextLines: int = 100,
+        query: Annotated[
+            str,
+            Field(
+                description="Lucene query for file contents. Supports phrases (\"foo\"), wildcards (foo*), AND/OR."
+            ),
+        ],
+        repos: Annotated[
+            list[str] | None,
+            Field(
+                description="Repository names to search. Omit to search all accessible repositories."
+            ),
+        ] = None,
+        pathPattern: Annotated[
+            str | None,
+            Field(
+                description="Glob pattern for file paths (e.g., '*.java', 'src/**/*.py'). Omit to search all files."
+            ),
+        ] = None,
+        branch: Annotated[
+            str | None,
+            Field(
+                description="Branch to search (e.g., 'refs/heads/main'). Omit to search default branch only."
+            ),
+        ] = None,
+        count: Annotated[
+            int,
+            Field(description="Maximum results. Default: 25, max: 100."),
+        ] = 25,
+        contextLines: Annotated[
+            int,
+            Field(description="Context lines around matches. Default: 10, max: 200."),
+        ] = 10,
     ) -> dict[str, Any]:
-        """Search for content within files across repositories.
-
-        Searches file contents using Gitblit's Lucene index. Returns matching
-        code snippets with surrounding context.
-
-        Args:
-            query: Search query (supports Lucene syntax)
-            repos: Repository names to search (default: all)
-            pathPattern: Filter by file path pattern (e.g., '*.java')
-            branch: Filter by branch (e.g., 'refs/heads/main')
-            count: Maximum number of results (default: 25)
-            contextLines: Lines of context around matches (default: 100)
-
-        Returns:
-            Dictionary with search results and chunks
-        """
         result = gb_file_search(
             query=query,
             repos=repos,
@@ -145,30 +220,35 @@ def _register_tools(mcp: FastMCP) -> None:
         _check_error(result)
         return result.model_dump(exclude={"query"})
 
-    @mcp.tool()  # type: ignore[misc, untyped-decorator]
+    @mcp.tool(description=_COMMIT_SEARCH_DESCRIPTION)  # type: ignore[misc, untyped-decorator]
     def commit_search(
-        query: str,
-        repos: list[str],
-        authors: list[str] | None = None,
-        branch: str | None = None,
-        count: int = 25,
+        query: Annotated[
+            str,
+            Field(
+                description="Lucene query for commit messages. Supports phrases (\"fix\"), wildcards (feat*), AND/OR."
+            ),
+        ],
+        repos: Annotated[
+            list[str],
+            Field(description="Repository names to search. Required, at least one."),
+        ],
+        authors: Annotated[
+            list[str] | None,
+            Field(
+                description="Filter by author names. Multiple authors use OR logic. Omit to include all authors."
+            ),
+        ] = None,
+        branch: Annotated[
+            str | None,
+            Field(
+                description="Branch to search (e.g., 'refs/heads/main'). Omit to search default branch only."
+            ),
+        ] = None,
+        count: Annotated[
+            int,
+            Field(description="Maximum results. Default: 25, max: 100."),
+        ] = 25,
     ) -> dict[str, Any]:
-        """Search commit history across repositories.
-
-        Searches for commits by message content, author, or code changes.
-        Use this to find when changes were made, who made them, or track down
-        specific commits.
-
-        Args:
-            query: Search query (supports Lucene syntax)
-            repos: Repository names to search (required)
-            authors: Filter by author names (OR logic)
-            branch: Filter by branch (e.g., 'refs/heads/main')
-            count: Maximum number of results (default: 25)
-
-        Returns:
-            Dictionary with commits array
-        """
         result = gb_commit_search(
             query=query, repos=repos, authors=authors, branch=branch, count=count
         )

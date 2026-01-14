@@ -8,7 +8,7 @@ I researched the following areas to inform this plan:
 
 1. **MCP Tool Specifications** (`docs/mcp_api.md`): Complete specifications for all 5 MCP tools with input/output schemas, descriptions, and examples. All tools are clearly defined with specific parameter requirements and response structures.
 
-2. **Search API Plugin Endpoints** (`docs/search_plugin_api.md`): REST API specification for the backend that the MCP server will call. All endpoints are defined at `/api/mcp-server/*` with query parameters, response formats, and error handling.
+2. **Search API Plugin Endpoints** (`docs/search_plugin_api.md`): REST API specification for the backend that the MCP server will call. All endpoints are defined at `/api/.mcp-internal/*` with query parameters, response formats, and error handling.
 
 3. **MVP Scope** (`docs/mvp_scope.md`): Clear definition of what's in/out of scope. P0 tools are gb_list_repos, gb_list_files, gb_read_file, and gb_file_search. P1 is gb_commit_search. Authentication and advanced features are explicitly out of scope.
 
@@ -20,7 +20,7 @@ I researched the following areas to inform this plan:
 
 - **Thin Adapter Pattern**: The MCP server is explicitly designed as a thin protocol adapter with no business logic - all operations delegate to the Search API Plugin
 - **Direct API Mapping**: Each MCP tool maps 1:1 to a Search API Plugin endpoint with minimal transformation
-- **Live Testing**: Tests will run against a live test server at `http://10.1.2.3:8080` rather than mocking
+- **Live Testing**: Tests will run against a live test server at `http://10.1.2.3` rather than mocking
 - **No Repository Structure**: The project has no Python source code yet - this is a greenfield implementation
 - **Clear Conventions**: Repository names include `.git` suffix, file paths are relative without leading slash, revisions can be branch/tag/SHA
 
@@ -44,7 +44,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 
 - "Build the MVP version of the Gitblit MCP Server"
 - "MCP server is a thin protocol adapter that translates MCP tool calls into HTTP requests"
-- "Write pytest tests against the live test server at `http://10.1.2.3:8080`"
+- "Write pytest tests against the live test server at `http://10.1.2.3`"
 - "Server can be started with `poetry run python -m gitblit_mcp_server`"
 - "Code passes ruff check and mypy type checking"
 
@@ -54,7 +54,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 - FastMCP server setup with proper tool registration
 - HTTP client for calling Search API Plugin endpoints
 - Environment variable configuration with .env file support (GITBLIT_URL)
-- Pytest test suite against live server at http://10.1.2.3:8080
+- Pytest test suite against live server at http://10.1.2.3
 - Poetry project setup with dependencies (fastmcp, httpx, python-dotenv, pytest)
 - Code quality compliance (ruff, mypy)
 - Runnable as Python module: `python -m gitblit_mcp_server`
@@ -72,7 +72,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 
 **Assumptions / constraints**
 
-- Search API Plugin is already deployed and functional at http://10.1.2.3:8080
+- Search API Plugin is already deployed and functional at http://10.1.2.3
 - Test repositories and data exist on the test Gitblit instance
 - Direct HTTP requests without connection pooling or advanced networking (MVP simplicity)
 - Python 3.10+ environment
@@ -90,7 +90,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 - [ ] Implement `gb_commit_search` MCP tool to search commit history
 - [ ] Use environment variables with .env file support for configuration
 - [ ] GITBLIT_URL environment variable to configure the server URL
-- [ ] Write pytest tests against the live test server at http://10.1.2.3:8080
+- [ ] Write pytest tests against the live test server at http://10.1.2.3
 - [ ] Use .env file to provide server URL for tests
 - [ ] Server can be started with `poetry run python -m gitblit_mcp_server`
 - [ ] Code passes ruff check and mypy type checking
@@ -435,7 +435,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 - **Entity / contract:** Environment configuration
 - **Shape:**
   ```python
-  GITBLIT_URL: str  # Required, base URL like "http://10.1.2.3:8080"
+  GITBLIT_URL: str  # Required, base URL like "http://10.1.2.3"
   ```
 - **Refactor strategy:** New configuration, validated on startup, fail-fast if missing
 - **Evidence:** docs/features/mcp_server_mvp/change_brief.md:21-24
@@ -454,7 +454,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 
 ### Search API Plugin HTTP Endpoints
 
-- **Surface:** GET /api/mcp-server/repos
+- **Surface:** GET /api/.mcp-internal/repos
 - **Inputs:** Query params (query, limit, after)
 - **Outputs:** JSON with repositories array and pagination object
 - **Errors:** 400 (invalid params), 500 (server error)
@@ -462,7 +462,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 
 ---
 
-- **Surface:** GET /api/mcp-server/files
+- **Surface:** GET /api/.mcp-internal/files
 - **Inputs:** Query params (repo, path, revision)
 - **Outputs:** JSON with files array
 - **Errors:** 404 (repo not found), 400 (invalid params)
@@ -470,7 +470,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 
 ---
 
-- **Surface:** GET /api/mcp-server/file
+- **Surface:** GET /api/.mcp-internal/file
 - **Inputs:** Query params (repo, path, revision, startLine, endLine)
 - **Outputs:** JSON with content string (line-numbered)
 - **Errors:** 404 (repo/file not found), 400 (file too large >128KB or invalid range)
@@ -478,7 +478,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 
 ---
 
-- **Surface:** GET /api/mcp-server/search/files
+- **Surface:** GET /api/.mcp-internal/search/files
 - **Inputs:** Query params (query, repos comma-separated, pathPattern, branch, count, contextLines)
 - **Outputs:** JSON with query, totalCount, limitHit, results array with chunks
 - **Errors:** 400 (invalid query syntax or params), 500 (search error)
@@ -486,7 +486,7 @@ Build the MVP version of Gitblit MCP Server - a Python/FastMCP application that 
 
 ---
 
-- **Surface:** GET /api/mcp-server/search/commits
+- **Surface:** GET /api/.mcp-internal/search/commits
 - **Inputs:** Query params (query, repos comma-separated, authors comma-separated, branch, count)
 - **Outputs:** JSON with query, totalCount, limitHit, commits array
 - **Errors:** 400 (missing repos or invalid query), 500 (search error)
@@ -981,7 +981,7 @@ The MCP server has no user interface. Interaction is through:
 
 ### Risks
 
-- **Risk:** Live test server at http://10.1.2.3:8080 not available or lacks test data
+- **Risk:** Live test server at http://10.1.2.3 not available or lacks test data
 - **Impact:** Cannot run tests, blocks development verification
 - **Mitigation:** Verify server access early, document required test repositories/files, consider fallback mock testing if server unavailable
 
@@ -1017,7 +1017,7 @@ The MCP server has no user interface. Interaction is through:
 
 ---
 
-- **Question:** What test repositories and data must exist on http://10.1.2.3:8080?
+- **Question:** What test repositories and data must exist on http://10.1.2.3?
 - **Why it matters:** Tests depend on specific repos/files existing with known content
 - **Owner / follow-up:** Survey live server or create test data setup script, document in tests/README
 

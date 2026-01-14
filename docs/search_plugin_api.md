@@ -2,7 +2,7 @@
 
 This document specifies the REST API endpoints provided by the Gitblit Search API Plugin for use by the Gitblit MCP Server.
 
-**Base Path:** `/api/mcp-server`
+**Base Path:** `/api/.mcp-internal`
 
 ## Common Response Format
 
@@ -27,7 +27,7 @@ All successful responses return HTTP 200 with a JSON body.
 
 ## Endpoints
 
-### GET /api/mcp-server/repos
+### GET /api/.mcp-internal/repos
 
 List repositories accessible to the current user.
 
@@ -62,12 +62,12 @@ List repositories accessible to the current user.
 #### Example
 
 ```bash
-curl "http://gitblit:8080/api/mcp-server/repos?query=api&limit=10"
+curl "http://gitblit:8080/api/.mcp-internal/repos?query=api&limit=10"
 ```
 
 ---
 
-### GET /api/mcp-server/files
+### GET /api/.mcp-internal/files
 
 List files and directories at a path within a repository.
 
@@ -101,12 +101,12 @@ Directories are listed first, followed by files. Directory paths end with `/`.
 #### Example
 
 ```bash
-curl "http://gitblit:8080/api/mcp-server/files?repo=myproject.git&path=src&revision=main"
+curl "http://gitblit:8080/api/.mcp-internal/files?repo=myproject.git&path=src&revision=main"
 ```
 
 ---
 
-### GET /api/mcp-server/file
+### GET /api/.mcp-internal/file
 
 Read the content of a file from a repository.
 
@@ -138,12 +138,83 @@ Content is returned with line numbers prefixed in the format `{line_number}: {co
 #### Example
 
 ```bash
-curl "http://gitblit:8080/api/mcp-server/file?repo=myproject.git&path=src/main.py&startLine=10&endLine=50"
+curl "http://gitblit:8080/api/.mcp-internal/file?repo=myproject.git&path=src/main.py&startLine=10&endLine=50"
 ```
 
 ---
 
-### GET /api/mcp-server/search/files
+### GET /api/.mcp-internal/find
+
+Find files matching a glob pattern across repositories using Git tree walking. More efficient than Lucene search for path-only queries.
+
+#### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `pathPattern` | string | Yes | - | Glob pattern (e.g., `*.java`, `**/Dockerfile`, `src/**/test_*.py`) |
+| `repos` | string | No | all | Comma-separated repository names |
+| `revision` | string | No | HEAD | Branch, tag, or commit SHA |
+| `limit` | integer | No | 50 | Maximum total files to return (max: 200) |
+
+#### Glob Pattern Syntax
+
+| Pattern | Matches |
+|---------|---------|
+| `*` | Any characters except `/` |
+| `**` | Any characters including `/` (directory crossing) |
+| `?` | Single character except `/` |
+| `*.java` | All Java files in root |
+| `**/*.java` | All Java files anywhere |
+| `src/**/test_*.py` | Test files under src/ |
+| `Dockerfile` | Exact filename in root |
+| `**/Dockerfile` | Dockerfile anywhere |
+
+#### Response
+
+```json
+{
+  "pattern": "**/pom.xml",
+  "totalCount": 3,
+  "limitHit": false,
+  "results": [
+    {
+      "repository": "backend.git",
+      "revision": "refs/heads/main",
+      "files": ["pom.xml", "modules/core/pom.xml"]
+    },
+    {
+      "repository": "frontend.git",
+      "revision": "refs/heads/main",
+      "files": ["pom.xml"]
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `pattern` | string | The glob pattern that was searched |
+| `totalCount` | int | Total number of matching files found |
+| `limitHit` | boolean | True if results were truncated due to limit |
+| `results` | array | Matching files grouped by repository |
+| `results[].repository` | string | Repository name |
+| `results[].revision` | string | Resolved revision (branch ref or commit SHA) |
+| `results[].files` | array | List of matching file paths |
+
+#### Errors
+
+- `400` - Missing `pathPattern` parameter
+- `400` - Invalid glob pattern syntax
+
+#### Example
+
+```bash
+curl "http://gitblit:8080/api/.mcp-internal/find?pathPattern=**/*.java&repos=backend.git&limit=100"
+```
+
+---
+
+### GET /api/.mcp-internal/search/files
 
 Search file contents across repositories using Lucene.
 
@@ -154,9 +225,9 @@ Search file contents across repositories using Lucene.
 | `query` | string | Yes | - | Lucene search query |
 | `repos` | string | No | all | Comma-separated repository names |
 | `pathPattern` | string | No | - | File path pattern filter (e.g., `*.java`) |
-| `branch` | string | No | - | Branch filter (e.g., `refs/heads/main`) |
+| `branch` | string | No | default | Branch filter (e.g., `refs/heads/main`). If omitted, searches only the default branch of each repository. |
 | `count` | integer | No | 25 | Maximum results (max: 100) |
-| `contextLines` | integer | No | 100 | Lines of context around each match |
+| `contextLines` | integer | No | 10 | Lines of context around each match (max: 200) |
 
 The search is automatically scoped to `type:blob` (file content only).
 
@@ -190,12 +261,12 @@ Each result includes one or more `chunks` containing the matching code with surr
 #### Example
 
 ```bash
-curl "http://gitblit:8080/api/mcp-server/search/files?query=SQLException&repos=backend.git&pathPattern=*.java&count=10"
+curl "http://gitblit:8080/api/.mcp-internal/search/files?query=SQLException&repos=backend.git&pathPattern=*.java&count=10"
 ```
 
 ---
 
-### GET /api/mcp-server/search/commits
+### GET /api/.mcp-internal/search/commits
 
 Search commit history across repositories using Lucene.
 
@@ -206,7 +277,7 @@ Search commit history across repositories using Lucene.
 | `query` | string | Yes | - | Lucene search query |
 | `repos` | string | Yes | - | Comma-separated repository names |
 | `authors` | string | No | - | Comma-separated author names to filter by (OR logic) |
-| `branch` | string | No | - | Branch filter |
+| `branch` | string | No | default | Branch filter. If omitted, searches only the default branch of each repository. |
 | `count` | integer | No | 25 | Maximum results (max: 100) |
 
 The search is automatically scoped to `type:commit`.
@@ -236,7 +307,7 @@ The search is automatically scoped to `type:commit`.
 #### Example
 
 ```bash
-curl "http://gitblit:8080/api/mcp-server/search/commits?query=bug%20fix&repos=myproject.git&count=10"
+curl "http://gitblit:8080/api/.mcp-internal/search/commits?query=bug%20fix&repos=myproject.git&count=10"
 ```
 
 ---
@@ -298,4 +369,6 @@ Access-Control-Allow-Headers: Authorization, Content-Type
 
 4. **Response Formatting**: All responses match the structure expected by the MCP server tools.
 
-5. **Chunk Context**: File search results include configurable context lines around each match (default: 100).
+5. **Chunk Context**: File search results include configurable context lines around each match (default: 10, max: 200).
+
+6. **Default Branch**: When no branch filter is specified, searches are restricted to each repository's default branch (from `RepositoryModel.HEAD`) to avoid duplicate results from multiple branches.

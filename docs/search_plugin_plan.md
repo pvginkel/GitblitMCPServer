@@ -45,15 +45,15 @@ The plugin provides REST API endpoints that the Gitblit MCP Server calls. The MC
 
 ## API Base Path
 
-Change from `/api/search` to `/api/mcp-server`.
+Change from `/api/search` to `/api/.mcp-internal`.
 
-All endpoints will be prefixed with `/api/mcp-server/`.
+All endpoints will be prefixed with `/api/.mcp-internal/`.
 
 ---
 
 ## Endpoints to Implement
 
-### 1. GET /api/mcp-server/repos
+### 1. GET /api/.mcp-internal/repos
 
 List repositories accessible to the authenticated user.
 
@@ -99,7 +99,7 @@ List repositories accessible to the authenticated user.
 
 ---
 
-### 2. GET /api/mcp-server/files
+### 2. GET /api/.mcp-internal/files
 
 List files and directories at a path within a repository.
 
@@ -142,7 +142,7 @@ List files and directories at a path within a repository.
 
 ---
 
-### 3. GET /api/mcp-server/file
+### 3. GET /api/.mcp-internal/file
 
 Read file content from a repository.
 
@@ -178,7 +178,7 @@ Read file content from a repository.
 
 ---
 
-### 4. GET /api/mcp-server/search/files
+### 4. GET /api/.mcp-internal/search/files
 
 Search file contents using Lucene index.
 
@@ -238,7 +238,7 @@ Search file contents using Lucene index.
 
 ---
 
-### 5. GET /api/mcp-server/search/commits
+### 5. GET /api/.mcp-internal/search/commits
 
 Search commit history using Lucene index.
 
@@ -339,13 +339,13 @@ src/main/java/com/gitblit/plugin/mcp/
 
 The existing `SearchApiFilter` handles a single endpoint. Refactor to:
 
-1. Change API path constant to `/api/mcp-server`
+1. Change API path constant to `/api/.mcp-internal`
 2. Add routing logic to dispatch to appropriate handler based on URI:
-   - `/api/mcp-server/repos` → `ReposHandler`
-   - `/api/mcp-server/files` → `FilesHandler`
-   - `/api/mcp-server/file` → `FileHandler`
-   - `/api/mcp-server/search/files` → `FileSearchHandler`
-   - `/api/mcp-server/search/commits` → `CommitSearchHandler`
+   - `/api/.mcp-internal/repos` → `ReposHandler`
+   - `/api/.mcp-internal/files` → `FilesHandler`
+   - `/api/.mcp-internal/file` → `FileHandler`
+   - `/api/.mcp-internal/search/files` → `FileSearchHandler`
+   - `/api/.mcp-internal/search/commits` → `CommitSearchHandler`
 
 3. Each handler implements a common interface:
 
