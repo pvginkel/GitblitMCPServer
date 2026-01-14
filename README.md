@@ -61,7 +61,7 @@ Configure via environment variables or a `.env` file:
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `GITBLIT_URL` | Yes | - | Base URL of your Gitblit instance (e.g., `http://10.1.2.3:8080`) |
+| `GITBLIT_URL` | Yes | - | Base URL of your Gitblit instance (e.g., `http://10.1.2.3`) |
 | `MCP_PORT` | No | `8000` | Port for the MCP server HTTP endpoint |
 | `MCP_HOST` | No | `0.0.0.0` | Host to bind to (use `127.0.0.1` for local-only access) |
 | `MCP_PATH_PREFIX` | No | - | Path prefix for reverse proxy setups (e.g., `/api/mcp`) |

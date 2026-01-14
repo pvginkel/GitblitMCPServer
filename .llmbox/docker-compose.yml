@@ -3,7 +3,7 @@ services:
     image: registry:5000/llmbox:latest
     network_mode: host
     pid: host
-    working_dir: /work/GitblitMCPServer
+    working_dir: /work/server
     tty: true
     user: "${UID}:${GID}"
     environment:
@@ -17,10 +17,10 @@ services:
       - ${HOME}/.gitconfig:/home/ubuntu/.gitconfig:ro
       - ${HOME}/.cache:/home/ubuntu/.cache:rw
       - ${HOME}/.happy:/home/ubuntu/.happy:rw
-      - .:/work/GitblitMCPServer:rw
-      - .git:/work/GitblitMCPServer/.git:ro
-      - ../GitblitSearchApiPlugin:/work/GitblitSearchApiPlugin:rw
-      - ../GitblitSearchApiPlugin/.git:/work/GitblitSearchApiPlugin/.git:ro
+      - ../server:/work/server:rw
+      - ../server/.git:/work/server/.git:ro
+      - ../plugin:/work/plugin:rw
+      - ../plugin/.git:/work/plugin/.git:ro
       - ../gitblit:/work/gitblit:ro
     # Required for Chromium
     shm_size: 1G

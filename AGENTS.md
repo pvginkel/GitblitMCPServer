@@ -79,7 +79,7 @@ The server exposes these tools (see `docs/mcp_api.md` for details):
 
 ## Search Plugin API
 
-All MCP tools call the Search API Plugin at `/api/mcp-server/*`. See `docs/search_plugin_api.md` for endpoint specifications.
+All MCP tools call the Search API Plugin at `/api/.mcp-internal/*`. See `docs/search_plugin_api.md` for endpoint specifications.
 
 ## Conventions
 

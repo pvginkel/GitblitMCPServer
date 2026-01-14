@@ -60,7 +60,7 @@ class Config:
     @property
     def api_base_url(self) -> str:
         """Return the base URL for API endpoints."""
-        return f"{self.gitblit_url}/api/mcp-server"
+        return f"{self.gitblit_url}/api/.mcp-internal"
 
 
 # Global config instance

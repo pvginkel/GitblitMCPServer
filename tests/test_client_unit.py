@@ -388,4 +388,4 @@ class TestURLConstruction:
         """Test that API endpoint path is correct."""
         with patch.dict("os.environ", {"GITBLIT_URL": "http://test-server:8080"}):
             client = GitblitClient()
-            assert "/api/mcp-server" in client.base_url
+            assert "/api/.mcp-internal" in client.base_url

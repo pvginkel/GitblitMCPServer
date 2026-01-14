@@ -7,7 +7,7 @@ from gitblit_mcp_server.config import ConfigurationError
 
 def test_config_valid_url(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test configuration with valid GITBLIT_URL."""
-    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
 
     # Force reload of config
     from gitblit_mcp_server import config
@@ -15,20 +15,20 @@ def test_config_valid_url(monkeypatch: pytest.MonkeyPatch) -> None:
     config._config = None
 
     cfg = config.get_config()
-    assert cfg.gitblit_url == "http://10.1.2.3:8080"
-    assert cfg.api_base_url == "http://10.1.2.3:8080/api/mcp-server"
+    assert cfg.gitblit_url == "http://10.1.2.3"
+    assert cfg.api_base_url == "http://10.1.2.3/api/.mcp-internal"
 
 
 def test_config_trailing_slash_removed(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that trailing slash is removed from GITBLIT_URL."""
-    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080/")
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3/")
 
     from gitblit_mcp_server import config
 
     config._config = None
 
     cfg = config.get_config()
-    assert cfg.gitblit_url == "http://10.1.2.3:8080"
+    assert cfg.gitblit_url == "http://10.1.2.3"
     assert not cfg.gitblit_url.endswith("/")
 
 
@@ -52,7 +52,7 @@ def test_config_missing_url(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_config_invalid_url_scheme(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test configuration with invalid URL scheme."""
-    monkeypatch.setenv("GITBLIT_URL", "ftp://10.1.2.3:8080")
+    monkeypatch.setenv("GITBLIT_URL", "ftp://10.1.2.3")
 
     from gitblit_mcp_server import config
 
@@ -75,12 +75,12 @@ def test_config_https_url(monkeypatch: pytest.MonkeyPatch) -> None:
 
     cfg = config.get_config()
     assert cfg.gitblit_url == "https://gitblit.example.com"
-    assert cfg.api_base_url == "https://gitblit.example.com/api/mcp-server"
+    assert cfg.api_base_url == "https://gitblit.example.com/api/.mcp-internal"
 
 
 def test_config_mcp_path_prefix_default(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test default MCP path prefix is empty."""
-    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
     monkeypatch.delenv("MCP_PATH_PREFIX", raising=False)
 
     from gitblit_mcp_server import config
@@ -93,7 +93,7 @@ def test_config_mcp_path_prefix_default(monkeypatch: pytest.MonkeyPatch) -> None
 
 def test_config_mcp_path_prefix_custom(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test custom MCP path prefix from environment."""
-    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
     monkeypatch.setenv("MCP_PATH_PREFIX", "/api/mcp")
 
     from gitblit_mcp_server import config
@@ -106,7 +106,7 @@ def test_config_mcp_path_prefix_custom(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_config_mcp_path_prefix_adds_leading_slash(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that leading slash is added if missing."""
-    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
     monkeypatch.setenv("MCP_PATH_PREFIX", "api/mcp")
 
     from gitblit_mcp_server import config
@@ -119,7 +119,7 @@ def test_config_mcp_path_prefix_adds_leading_slash(monkeypatch: pytest.MonkeyPat
 
 def test_config_mcp_path_prefix_strips_trailing_slash(monkeypatch: pytest.MonkeyPatch) -> None:
     """Test that trailing slash is stripped from prefix."""
-    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3:8080")
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
     monkeypatch.setenv("MCP_PATH_PREFIX", "/api/mcp/")
 
     from gitblit_mcp_server import config
