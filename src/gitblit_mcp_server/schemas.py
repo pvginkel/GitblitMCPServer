@@ -102,6 +102,24 @@ class CommitSearchResponse(BaseModel):  # type: ignore[misc]
     commits: list[CommitSearchResult]
 
 
+# Find files schemas
+class FindFilesResult(BaseModel):  # type: ignore[misc]
+    """A repository's matching files."""
+
+    repository: str = Field(..., description="Repository name")
+    revision: str | None = Field(None, description="Resolved revision reference")
+    files: list[str] = Field(..., description="List of matching file paths")
+
+
+class FindFilesResponse(BaseModel):  # type: ignore[misc]
+    """Response from find files endpoint."""
+
+    pattern: str = Field(..., description="The glob pattern that was searched")
+    totalCount: int = Field(..., description="Total number of matching files found")
+    limitHit: bool = Field(..., description="Whether results were truncated due to limit")
+    results: list[FindFilesResult]
+
+
 # Error schemas
 class ErrorDetail(BaseModel):  # type: ignore[misc]
     """Error detail information."""

@@ -471,6 +471,108 @@ Tool call: gb_commit_search(query="auth OR login OR authentication", repos=["api
 
 ---
 
+## gb_find_files
+
+Finds files matching a glob pattern across repositories.
+
+### Description
+
+Discovers files by path/name pattern using Git tree walking. Use this to find files across repositories without searching file contents.
+
+**When to use:**
+- Find all repositories containing a specific file (e.g., Dockerfile, package.json)
+- Discover files by extension across repos
+- Find configuration files by name pattern
+
+### Input Schema
+
+```json
+{
+  "type": "object",
+  "required": ["pathPattern"],
+  "properties": {
+    "pathPattern": {
+      "type": "string",
+      "description": "Glob pattern to match file paths (e.g., '*.java', '**/Dockerfile', 'src/**/test_*.py')"
+    },
+    "repos": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Repository names to search. If empty, searches all accessible repositories."
+    },
+    "revision": {
+      "type": "string",
+      "description": "Branch, tag, or commit SHA. Defaults to HEAD of default branch."
+    },
+    "limit": {
+      "type": "integer",
+      "description": "Maximum number of files to return. Defaults to 50, max 200."
+    }
+  }
+}
+```
+
+### Output Schema
+
+```json
+{
+  "type": "object",
+  "required": ["pattern", "totalCount", "limitHit", "results"],
+  "properties": {
+    "pattern": {
+      "type": "string",
+      "description": "The glob pattern that was searched"
+    },
+    "totalCount": {
+      "type": "integer",
+      "description": "Total number of matching files found"
+    },
+    "limitHit": {
+      "type": "boolean",
+      "description": "Whether results were truncated due to limit"
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["repository", "files"],
+        "properties": {
+          "repository": { "type": "string" },
+          "revision": { "type": "string" },
+          "files": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+### Glob Pattern Syntax
+
+| Pattern | Description | Example |
+|---------|-------------|---------|
+| `*` | Any characters except `/` | `*.java` matches `Foo.java` |
+| `**` | Any path segments | `**/test.py` matches `src/foo/test.py` |
+| `?` | Single character | `?.txt` matches `a.txt` |
+
+### Examples
+
+```
+User: "Find all Dockerfiles"
+Tool call: gb_find_files(pathPattern="**/Dockerfile")
+
+User: "Which repos have protobuf files?"
+Tool call: gb_find_files(pathPattern="**/*.proto")
+
+User: "Find sdkconfig in firmware repos"
+Tool call: gb_find_files(pathPattern="**/sdkconfig", repos=["firmware/sensor.git", "firmware/gateway.git"])
+```
+
+---
+
 ## Lucene Query Syntax Reference
 
 Both search tools support Gitblit's Lucene query syntax:

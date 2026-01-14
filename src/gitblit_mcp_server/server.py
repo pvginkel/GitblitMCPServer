@@ -8,6 +8,7 @@ from pydantic import Field
 from .schemas import ErrorResponse, GitblitAPIError
 from .tools.commit_search import gb_commit_search
 from .tools.file_search import gb_file_search
+from .tools.find_files import gb_find_files
 from .tools.list_files import gb_list_files
 from .tools.list_repos import gb_list_repos
 from .tools.read_file import gb_read_file
@@ -85,6 +86,19 @@ Behavior:
 - If authors is specified, multiple authors use OR logic
 - If branch is omitted, searches only each repository's default branch (avoids duplicate results)
 - If count is omitted, defaults to 25 (max: 100)
+""".strip()
+
+_FIND_FILES_DESCRIPTION = """
+Finds files matching a glob pattern across repositories using Git tree walking.
+Use this to discover files by path/name without searching file contents.
+
+Behavior:
+- Uses Git tree walking (not Lucene index) for efficient path matching
+- If repos is omitted, searches all accessible repositories
+- If revision is omitted, uses HEAD of each repository's default branch
+- If limit is omitted, defaults to 50 (max: 200)
+- Results are grouped by repository
+- Glob patterns: * matches any chars except /, ** matches any path segments, ? matches single char
 """.strip()
 
 
@@ -254,3 +268,34 @@ def _register_tools(mcp: FastMCP) -> None:
         )
         _check_error(result)
         return result.model_dump(exclude={"query"})
+
+    @mcp.tool(description=_FIND_FILES_DESCRIPTION)  # type: ignore[misc, untyped-decorator]
+    def find_files(
+        pathPattern: Annotated[
+            str,
+            Field(
+                description="Glob pattern to match file paths (e.g., '*.java', '**/Dockerfile', 'src/**/test_*.py')."
+            ),
+        ],
+        repos: Annotated[
+            list[str] | None,
+            Field(
+                description="Repository names to search. Omit to search all accessible repositories."
+            ),
+        ] = None,
+        revision: Annotated[
+            str | None,
+            Field(
+                description="Branch, tag, or commit SHA. Omit to use HEAD of default branch."
+            ),
+        ] = None,
+        limit: Annotated[
+            int,
+            Field(description="Maximum files to return. Default: 50, max: 200."),
+        ] = 50,
+    ) -> dict[str, Any]:
+        result = gb_find_files(
+            pathPattern=pathPattern, repos=repos, revision=revision, limit=limit
+        )
+        _check_error(result)
+        return result.model_dump()

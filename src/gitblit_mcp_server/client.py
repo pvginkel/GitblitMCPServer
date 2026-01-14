@@ -10,6 +10,7 @@ from .schemas import (
     ErrorDetail,
     ErrorResponse,
     FileSearchResponse,
+    FindFilesResponse,
     ListFilesResponse,
     ListReposResponse,
     ReadFileResponse,
@@ -247,6 +248,36 @@ class GitblitClient:
             return result
 
         return CommitSearchResponse(**result)
+
+    def find_files(
+        self,
+        path_pattern: str,
+        repos: list[str] | None = None,
+        revision: str | None = None,
+        limit: int = 50,
+    ) -> FindFilesResponse | ErrorResponse:
+        """Find files by path pattern across repositories.
+
+        Args:
+            path_pattern: Glob pattern to match file paths
+            repos: Repository names to search (default: all)
+            revision: Branch, tag, or commit SHA (default: HEAD)
+            limit: Maximum files to return
+
+        Returns:
+            FindFilesResponse or ErrorResponse
+        """
+        params: dict[str, Any] = {"pathPattern": path_pattern, "limit": limit}
+        if repos:
+            params["repos"] = ",".join(repos)
+        if revision:
+            params["revision"] = revision
+
+        result = self._make_request("/find", params)
+        if isinstance(result, ErrorResponse):
+            return result
+
+        return FindFilesResponse(**result)
 
 
 # Shared client singleton for connection pooling

@@ -76,6 +76,7 @@ The server exposes these tools (see `docs/mcp_api.md` for details):
 | `gb_read_file` | Read file contents |
 | `gb_file_search` | Search file contents |
 | `gb_commit_search` | Search commit history |
+| `gb_find_files` | Find files by path pattern across repositories |
 
 ## Search Plugin API
 
