@@ -42,7 +42,8 @@ Behavior:
 - Query uses case-insensitive substring matching on repository names
 - If query is omitted, returns all accessible repositories
 - Results are sorted alphabetically by name
-- Supports cursor-based pagination via 'after' parameter
+- Supports offset-based pagination via 'offset' parameter
+- Returns 'totalCount' (total matches) and 'limitHit' (whether more results exist)
 """.strip()
 
 _LIST_FILES_DESCRIPTION = """
@@ -53,6 +54,8 @@ Behavior:
 - If revision is omitted, uses HEAD of the default branch
 - Directories are listed first, then files
 - Directory paths end with '/'
+- Supports offset-based pagination via 'offset' parameter
+- Returns 'totalCount' (total files) and 'limitHit' (whether more results exist)
 """.strip()
 
 _READ_FILE_DESCRIPTION = """
@@ -73,8 +76,10 @@ Behavior:
 - If repos is omitted, searches all accessible repositories
 - If branch is omitted, searches only each repository's default branch (avoids duplicate results)
 - If pathPattern is omitted, searches all file types
-- If count is omitted, defaults to 25 (max: 100)
+- If limit is omitted, defaults to 25 (max: 100)
 - If contextLines is omitted, defaults to 10 (max: 200)
+- Supports offset-based pagination via 'offset' parameter
+- Returns 'totalCount' (total matches) and 'limitHit' (whether more results exist)
 """.strip()
 
 _COMMIT_SEARCH_DESCRIPTION = """
@@ -85,7 +90,9 @@ Behavior:
 - repos parameter is required; must specify at least one repository
 - If authors is specified, multiple authors use OR logic
 - If branch is omitted, searches only each repository's default branch (avoids duplicate results)
-- If count is omitted, defaults to 25 (max: 100)
+- If limit is omitted, defaults to 25 (max: 100)
+- Supports offset-based pagination via 'offset' parameter
+- Returns 'totalCount' (total matches) and 'limitHit' (whether more results exist)
 """.strip()
 
 _FIND_FILES_DESCRIPTION = """
@@ -97,6 +104,8 @@ Behavior:
 - If repos is omitted, searches all accessible repositories
 - If revision is omitted, uses HEAD of each repository's default branch
 - If limit is omitted, defaults to 50 (max: 200)
+- Supports offset-based pagination via 'offset' parameter
+- Returns 'totalCount' (total matches) and 'limitHit' (whether more results exist)
 - Results are grouped by repository
 - Glob patterns: * matches any chars except /, ** matches any path segments, ? matches single char
 """.strip()
@@ -117,14 +126,12 @@ def _register_tools(mcp: FastMCP) -> None:
             int,
             Field(description="Maximum repositories to return. Default: 50, max: 100."),
         ] = 50,
-        after: Annotated[
-            str | None,
-            Field(
-                description="Pagination cursor. Use 'endCursor' from previous response to get next page."
-            ),
-        ] = None,
+        offset: Annotated[
+            int,
+            Field(description="Results to skip for pagination. Default: 0."),
+        ] = 0,
     ) -> dict[str, Any]:
-        result = gb_list_repos(query=query, limit=limit, after=after)
+        result = gb_list_repos(query=query, limit=limit, offset=offset)
         _check_error(result)
         return result.model_dump()
 
@@ -146,8 +153,16 @@ def _register_tools(mcp: FastMCP) -> None:
                 description="Branch, tag, or commit SHA. Omit to use HEAD of default branch."
             ),
         ] = None,
+        limit: Annotated[
+            int,
+            Field(description="Maximum files to return. Default: 100, max: 1000."),
+        ] = 100,
+        offset: Annotated[
+            int,
+            Field(description="Results to skip for pagination. Default: 0."),
+        ] = 0,
     ) -> dict[str, Any]:
-        result = gb_list_files(repo=repo, path=path, revision=revision)
+        result = gb_list_files(repo=repo, path=path, revision=revision, limit=limit, offset=offset)
         _check_error(result)
         return result.model_dump()
 
@@ -214,10 +229,14 @@ def _register_tools(mcp: FastMCP) -> None:
                 description="Branch to search (e.g., 'refs/heads/main'). Omit to search default branch only."
             ),
         ] = None,
-        count: Annotated[
+        limit: Annotated[
             int,
             Field(description="Maximum results. Default: 25, max: 100."),
         ] = 25,
+        offset: Annotated[
+            int,
+            Field(description="Results to skip for pagination. Default: 0."),
+        ] = 0,
         contextLines: Annotated[
             int,
             Field(description="Context lines around matches. Default: 10, max: 200."),
@@ -228,7 +247,8 @@ def _register_tools(mcp: FastMCP) -> None:
             repos=repos,
             pathPattern=pathPattern,
             branch=branch,
-            count=count,
+            limit=limit,
+            offset=offset,
             contextLines=contextLines,
         )
         _check_error(result)
@@ -258,13 +278,22 @@ def _register_tools(mcp: FastMCP) -> None:
                 description="Branch to search (e.g., 'refs/heads/main'). Omit to search default branch only."
             ),
         ] = None,
-        count: Annotated[
+        limit: Annotated[
             int,
             Field(description="Maximum results. Default: 25, max: 100."),
         ] = 25,
+        offset: Annotated[
+            int,
+            Field(description="Results to skip for pagination. Default: 0."),
+        ] = 0,
     ) -> dict[str, Any]:
         result = gb_commit_search(
-            query=query, repos=repos, authors=authors, branch=branch, count=count
+            query=query,
+            repos=repos,
+            authors=authors,
+            branch=branch,
+            limit=limit,
+            offset=offset,
         )
         _check_error(result)
         return result.model_dump(exclude={"query"})
@@ -293,9 +322,17 @@ def _register_tools(mcp: FastMCP) -> None:
             int,
             Field(description="Maximum files to return. Default: 50, max: 200."),
         ] = 50,
+        offset: Annotated[
+            int,
+            Field(description="Results to skip for pagination. Default: 0."),
+        ] = 0,
     ) -> dict[str, Any]:
         result = gb_find_files(
-            pathPattern=pathPattern, repos=repos, revision=revision, limit=limit
+            pathPattern=pathPattern,
+            repos=repos,
+            revision=revision,
+            limit=limit,
+            offset=offset,
         )
         _check_error(result)
         return result.model_dump()

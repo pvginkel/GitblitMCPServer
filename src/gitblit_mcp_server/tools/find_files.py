@@ -10,6 +10,7 @@ def gb_find_files(
     repos: list[str] | None = None,
     revision: str | None = None,
     limit: int = 50,
+    offset: int = 0,
 ) -> FindFilesResponse | ErrorResponse:
     """Find files matching a glob pattern across repositories.
 
@@ -20,9 +21,10 @@ def gb_find_files(
         repos: Repository names to search. Omit to search all accessible repositories.
         revision: Branch, tag, or commit SHA. Omit to use HEAD of default branch.
         limit: Maximum number of files to return. Defaults to 50.
+        offset: Number of results to skip for pagination. Defaults to 0.
 
     Returns:
-        FindFilesResponse with matching files grouped by repository.
+        FindFilesResponse with matching files, totalCount, and limitHit.
     """
     client = get_client()
     return client.find_files(
@@ -30,4 +32,5 @@ def gb_find_files(
         repos=repos,
         revision=revision,
         limit=limit,
+        offset=offset,
     )

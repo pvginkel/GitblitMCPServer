@@ -37,7 +37,7 @@ List repositories accessible to the current user.
 |-----------|------|----------|---------|-------------|
 | `query` | string | No | - | Filter repositories by name (substring match) |
 | `limit` | integer | No | 50 | Maximum results to return (max: 100) |
-| `after` | string | No | - | Pagination cursor |
+| `offset` | integer | No | 0 | Number of results to skip (for pagination) |
 
 #### Response
 
@@ -51,18 +51,15 @@ List repositories accessible to the current user.
       "hasCommits": true
     }
   ],
-  "pagination": {
-    "totalCount": 42,
-    "hasNextPage": true,
-    "endCursor": "cursor_token_here"
-  }
+  "totalCount": 42,
+  "limitHit": true
 }
 ```
 
 #### Example
 
 ```bash
-curl "http://gitblit:8080/api/.mcp-internal/repos?query=api&limit=10"
+curl "http://gitblit:8080/api/.mcp-internal/repos?query=api&limit=10&offset=0"
 ```
 
 ---
@@ -78,6 +75,8 @@ List files and directories at a path within a repository.
 | `repo` | string | Yes | - | Repository name (e.g., `team/project.git`) |
 | `path` | string | No | `/` | Directory path within repository |
 | `revision` | string | No | HEAD | Branch, tag, or commit SHA |
+| `limit` | integer | No | 100 | Maximum results to return (max: 200) |
+| `offset` | integer | No | 0 | Number of results to skip (for pagination) |
 
 #### Response
 
@@ -92,7 +91,9 @@ List files and directories at a path within a repository.
       "path": "README.md",
       "isDirectory": false
     }
-  ]
+  ],
+  "totalCount": 15,
+  "limitHit": false
 }
 ```
 
@@ -155,6 +156,7 @@ Find files matching a glob pattern across repositories using Git tree walking. M
 | `repos` | string | No | all | Comma-separated repository names |
 | `revision` | string | No | HEAD | Branch, tag, or commit SHA |
 | `limit` | integer | No | 50 | Maximum total files to return (max: 200) |
+| `offset` | integer | No | 0 | Number of results to skip (for pagination) |
 
 #### Glob Pattern Syntax
 
@@ -226,7 +228,8 @@ Search file contents across repositories using Lucene.
 | `repos` | string | No | all | Comma-separated repository names |
 | `pathPattern` | string | No | - | File path pattern filter (e.g., `*.java`) |
 | `branch` | string | No | default | Branch filter (e.g., `refs/heads/main`). If omitted, searches only the default branch of each repository. |
-| `count` | integer | No | 25 | Maximum results (max: 100) |
+| `limit` | integer | No | 25 | Maximum results (max: 100) |
+| `offset` | integer | No | 0 | Number of results to skip (for pagination) |
 | `contextLines` | integer | No | 10 | Lines of context around each match (max: 200) |
 
 The search is automatically scoped to `type:blob` (file content only).
@@ -261,7 +264,7 @@ Each result includes one or more `chunks` containing the matching code with surr
 #### Example
 
 ```bash
-curl "http://gitblit:8080/api/.mcp-internal/search/files?query=SQLException&repos=backend.git&pathPattern=*.java&count=10"
+curl "http://gitblit:8080/api/.mcp-internal/search/files?query=SQLException&repos=backend.git&pathPattern=*.java&limit=10"
 ```
 
 ---
@@ -278,7 +281,8 @@ Search commit history across repositories using Lucene.
 | `repos` | string | Yes | - | Comma-separated repository names |
 | `authors` | string | No | - | Comma-separated author names to filter by (OR logic) |
 | `branch` | string | No | default | Branch filter. If omitted, searches only the default branch of each repository. |
-| `count` | integer | No | 25 | Maximum results (max: 100) |
+| `limit` | integer | No | 25 | Maximum results (max: 100) |
+| `offset` | integer | No | 0 | Number of results to skip (for pagination) |
 
 The search is automatically scoped to `type:commit`.
 
@@ -307,7 +311,7 @@ The search is automatically scoped to `type:commit`.
 #### Example
 
 ```bash
-curl "http://gitblit:8080/api/.mcp-internal/search/commits?query=bug%20fix&repos=myproject.git&count=10"
+curl "http://gitblit:8080/api/.mcp-internal/search/commits?query=bug%20fix&repos=myproject.git&limit=10"
 ```
 
 ---
@@ -336,7 +340,7 @@ The search endpoints support Gitblit's Lucene query syntax:
 
 ```
 # File content containing "error" in Java files
-query=error&pathPattern=*.java
+query=error&pathPattern=*.java&limit=25
 
 # Commits by john with "fix" in message
 query=fix&authors=john

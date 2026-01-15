@@ -10,7 +10,8 @@ def gb_commit_search(
     repos: list[str],
     authors: list[str] | None = None,
     branch: str | None = None,
-    count: int = 25,
+    limit: int = 25,
+    offset: int = 0,
 ) -> CommitSearchResponse | ErrorResponse:
     """Search commit history across repositories.
 
@@ -23,13 +24,20 @@ def gb_commit_search(
                wildcards (foo*), AND/OR operators.
         repos: Repository names to search (required)
         authors: Filter by author names. Multiple authors use OR logic.
-        branch: Filter by branch (e.g., 'refs/heads/main'). If omitted, searches only each repository's default branch.
-        count: Maximum number of results. Defaults to 25.
+        branch: Filter by branch (e.g., 'refs/heads/main'). If omitted, searches
+            only each repository's default branch.
+        limit: Maximum number of results. Defaults to 25.
+        offset: Number of results to skip for pagination. Defaults to 0.
 
     Returns:
-        CommitSearchResponse with commits array, or ErrorResponse on error.
+        CommitSearchResponse with commits array, totalCount, and limitHit.
     """
     client = get_client()
     return client.search_commits(
-        query=query, repos=repos, authors=authors, branch=branch, count=count
+        query=query,
+        repos=repos,
+        authors=authors,
+        branch=branch,
+        limit=limit,
+        offset=offset,
     )

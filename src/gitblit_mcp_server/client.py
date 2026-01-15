@@ -98,23 +98,21 @@ class GitblitClient:
             )
 
     def list_repos(
-        self, query: str | None = None, limit: int = 50, after: str | None = None
+        self, query: str | None = None, limit: int = 50, offset: int = 0
     ) -> ListReposResponse | ErrorResponse:
         """List repositories.
 
         Args:
             query: Optional search query to filter repositories by name
             limit: Maximum number of repositories to return
-            after: Pagination cursor
+            offset: Number of results to skip for pagination
 
         Returns:
             ListReposResponse or ErrorResponse
         """
-        params: dict[str, Any] = {"limit": limit}
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
         if query:
             params["query"] = query
-        if after:
-            params["after"] = after
 
         result = self._make_request("/repos", params)
         if isinstance(result, ErrorResponse):
@@ -123,7 +121,12 @@ class GitblitClient:
         return ListReposResponse(**result)
 
     def list_files(
-        self, repo: str, path: str = "", revision: str | None = None
+        self,
+        repo: str,
+        path: str = "",
+        revision: str | None = None,
+        limit: int = 100,
+        offset: int = 0,
     ) -> ListFilesResponse | ErrorResponse:
         """List files in a repository path.
 
@@ -131,11 +134,13 @@ class GitblitClient:
             repo: Repository name (e.g., 'team/project.git')
             path: Directory path within repository
             revision: Branch, tag, or commit SHA
+            limit: Maximum number of files to return
+            offset: Number of results to skip for pagination
 
         Returns:
             ListFilesResponse or ErrorResponse
         """
-        params: dict[str, Any] = {"repo": repo}
+        params: dict[str, Any] = {"repo": repo, "limit": limit, "offset": offset}
         if path:
             params["path"] = path
         if revision:
@@ -187,7 +192,8 @@ class GitblitClient:
         repos: list[str] | None = None,
         path_pattern: str | None = None,
         branch: str | None = None,
-        count: int = 25,
+        limit: int = 25,
+        offset: int = 0,
         context_lines: int = 10,
     ) -> FileSearchResponse | ErrorResponse:
         """Search file contents.
@@ -197,13 +203,19 @@ class GitblitClient:
             repos: Repository names to search
             path_pattern: File path pattern filter
             branch: Branch filter
-            count: Maximum number of results
+            limit: Maximum number of results
+            offset: Number of results to skip for pagination
             context_lines: Lines of context around matches
 
         Returns:
             FileSearchResponse or ErrorResponse
         """
-        params: dict[str, Any] = {"query": query, "count": count, "contextLines": context_lines}
+        params: dict[str, Any] = {
+            "query": query,
+            "limit": limit,
+            "offset": offset,
+            "contextLines": context_lines,
+        }
         if repos:
             params["repos"] = ",".join(repos)
         if path_pattern:
@@ -223,7 +235,8 @@ class GitblitClient:
         repos: list[str],
         authors: list[str] | None = None,
         branch: str | None = None,
-        count: int = 25,
+        limit: int = 25,
+        offset: int = 0,
     ) -> CommitSearchResponse | ErrorResponse:
         """Search commit history.
 
@@ -232,12 +245,18 @@ class GitblitClient:
             repos: Repository names to search (required)
             authors: Author names to filter by
             branch: Branch filter
-            count: Maximum number of results
+            limit: Maximum number of results
+            offset: Number of results to skip for pagination
 
         Returns:
             CommitSearchResponse or ErrorResponse
         """
-        params: dict[str, Any] = {"query": query, "repos": ",".join(repos), "count": count}
+        params: dict[str, Any] = {
+            "query": query,
+            "repos": ",".join(repos),
+            "limit": limit,
+            "offset": offset,
+        }
         if authors:
             params["authors"] = ",".join(authors)
         if branch:
@@ -255,6 +274,7 @@ class GitblitClient:
         repos: list[str] | None = None,
         revision: str | None = None,
         limit: int = 50,
+        offset: int = 0,
     ) -> FindFilesResponse | ErrorResponse:
         """Find files by path pattern across repositories.
 
@@ -263,11 +283,16 @@ class GitblitClient:
             repos: Repository names to search (default: all)
             revision: Branch, tag, or commit SHA (default: HEAD)
             limit: Maximum files to return
+            offset: Number of results to skip for pagination
 
         Returns:
             FindFilesResponse or ErrorResponse
         """
-        params: dict[str, Any] = {"pathPattern": path_pattern, "limit": limit}
+        params: dict[str, Any] = {
+            "pathPattern": path_pattern,
+            "limit": limit,
+            "offset": offset,
+        }
         if repos:
             params["repos"] = ",".join(repos)
         if revision:

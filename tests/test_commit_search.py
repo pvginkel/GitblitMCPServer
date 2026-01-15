@@ -68,9 +68,9 @@ def test_commit_search_with_authors(client: GitblitClient, test_repo: str) -> No
         assert "Pieter" in commit.author
 
 
-def test_commit_search_with_count_limit(client: GitblitClient, test_repo: str) -> None:
-    """Test commit search with result count limit."""
-    result = client.search_commits(query="*", repos=[test_repo], count=3)
+def test_commit_search_with_limit(client: GitblitClient, test_repo: str) -> None:
+    """Test commit search with result limit."""
+    result = client.search_commits(query="*", repos=[test_repo], limit=3)
 
     assert isinstance(result, CommitSearchResponse)
     # Should return at most 3 commits
@@ -83,12 +83,28 @@ def test_commit_search_multiple_repos(client: GitblitClient) -> None:
     """Test commit search across multiple repositories."""
     # Search in multiple known repos
     result = client.search_commits(
-        query="*", repos=["netide/netide.git", "netide/netide-demo.git"], count=10
+        query="*", repos=["netide/netide.git", "netide/netide-demo.git"], limit=10
     )
 
     assert isinstance(result, CommitSearchResponse)
     assert isinstance(result.commits, list)
     assert len(result.commits) > 0
+
+
+def test_commit_search_with_offset(client: GitblitClient, test_repo: str) -> None:
+    """Test commit search with offset pagination."""
+    # Get first page
+    result1 = client.search_commits(query="*", repos=[test_repo], limit=5, offset=0)
+    assert isinstance(result1, CommitSearchResponse)
+
+    # Get second page
+    result2 = client.search_commits(query="*", repos=[test_repo], limit=5, offset=5)
+    assert isinstance(result2, CommitSearchResponse)
+
+    # If there are enough commits, pages should be different
+    if result1.totalCount > 5 and result2.commits:
+        page1_shas = {c.commit for c in result1.commits}
+        assert result2.commits[0].commit not in page1_shas
 
 
 def test_commit_search_exact_phrase(client: GitblitClient, test_repo: str) -> None:

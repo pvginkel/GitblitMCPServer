@@ -33,7 +33,8 @@ class TestListReposTool:
 
         content = get_text_content(result)
         assert "repositories" in content
-        assert "pagination" in content
+        assert "totalCount" in content
+        assert "limitHit" in content
 
     async def test_list_repos_with_limit(self, mcp_client: Client) -> None:
         """Test list_repos respects the limit parameter."""
@@ -184,7 +185,7 @@ class TestFileSearchTool:
         """Test file search with pathPattern filter."""
         result = await mcp_client.call_tool(
             "file_search",
-            {"query": "namespace", "pathPattern": "*Interop*", "count": 5},
+            {"query": "namespace", "pathPattern": "*Interop*", "limit": 5},
         )
 
         content = get_text_content(result)
@@ -196,7 +197,7 @@ class TestFileSearchTool:
     async def test_file_search_extension_filter(self, mcp_client: Client) -> None:
         """Test file search filtering by file extension."""
         result = await mcp_client.call_tool(
-            "file_search", {"query": "license", "pathPattern": "*.txt", "count": 5}
+            "file_search", {"query": "license", "pathPattern": "*.txt", "limit": 5}
         )
 
         content = get_text_content(result)
@@ -213,10 +214,10 @@ class TestFileSearchTool:
         # Should have 0 or very few results
         assert '"totalCount": 0' in content or '"totalCount":0' in content
 
-    async def test_file_search_with_count_limit(self, mcp_client: Client) -> None:
-        """Test file search respects count limit."""
+    async def test_file_search_with_limit(self, mcp_client: Client) -> None:
+        """Test file search respects limit parameter."""
         result = await mcp_client.call_tool(
-            "file_search", {"query": "using", "count": 3}
+            "file_search", {"query": "using", "limit": 3}
         )
 
         content = get_text_content(result)
@@ -268,12 +269,12 @@ class TestCommitSearchTool:
         content = get_text_content(result)
         assert "commits" in content
 
-    async def test_commit_search_with_count(
+    async def test_commit_search_with_limit(
         self, mcp_client: Client, test_repo: str
     ) -> None:
-        """Test commit search with count limit."""
+        """Test commit search with limit parameter."""
         result = await mcp_client.call_tool(
-            "commit_search", {"query": "fix OR add OR update", "repos": [test_repo], "count": 5}
+            "commit_search", {"query": "fix OR add OR update", "repos": [test_repo], "limit": 5}
         )
 
         content = get_text_content(result)
@@ -297,7 +298,7 @@ class TestCommitSearchTool:
     ) -> None:
         """Test commit search with wildcard query to browse commits."""
         result = await mcp_client.call_tool(
-            "commit_search", {"query": "*", "repos": [test_repo], "count": 10}
+            "commit_search", {"query": "*", "repos": [test_repo], "limit": 10}
         )
 
         content = get_text_content(result)
@@ -315,7 +316,7 @@ class TestWildcardQueries:
     ) -> None:
         """Test file search with wildcard query and repos filter."""
         result = await mcp_client.call_tool(
-            "file_search", {"query": "*", "repos": [test_repo], "count": 10}
+            "file_search", {"query": "*", "repos": [test_repo], "limit": 10}
         )
 
         content = get_text_content(result)
@@ -328,7 +329,7 @@ class TestWildcardQueries:
         """Test file search with wildcard query and pathPattern filter."""
         result = await mcp_client.call_tool(
             "file_search",
-            {"query": "*", "repos": [test_repo], "pathPattern": "*.cs", "count": 10},
+            {"query": "*", "repos": [test_repo], "pathPattern": "*.cs", "limit": 10},
         )
 
         content = get_text_content(result)
@@ -342,7 +343,7 @@ class TestWildcardQueries:
     ) -> None:
         """Test commit search wildcard to browse recent commits."""
         result = await mcp_client.call_tool(
-            "commit_search", {"query": "*", "repos": [test_repo], "count": 5}
+            "commit_search", {"query": "*", "repos": [test_repo], "limit": 5}
         )
 
         content = get_text_content(result)
@@ -383,7 +384,7 @@ class TestResponseFiltering:
     async def test_file_search_excludes_query_field(self, mcp_client: Client) -> None:
         """Test that file_search response excludes the 'query' field."""
         result = await mcp_client.call_tool(
-            "file_search", {"query": "namespace", "count": 1}
+            "file_search", {"query": "namespace", "limit": 1}
         )
 
         content = get_text_content(result)
@@ -398,7 +399,7 @@ class TestResponseFiltering:
     ) -> None:
         """Test that commit_search response excludes the 'query' field."""
         result = await mcp_client.call_tool(
-            "commit_search", {"query": "fix OR add", "repos": [test_repo], "count": 1}
+            "commit_search", {"query": "fix OR add", "repos": [test_repo], "limit": 1}
         )
 
         content = get_text_content(result)

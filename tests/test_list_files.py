@@ -16,6 +16,8 @@ def test_list_files_root(client: GitblitClient, test_repo: str) -> None:
 
     assert isinstance(result, ListFilesResponse)
     assert isinstance(result.files, list)
+    assert isinstance(result.totalCount, int)
+    assert isinstance(result.limitHit, bool)
 
     # Validate structure if files exist
     if result.files:
@@ -58,3 +60,43 @@ def test_list_files_with_revision(client: GitblitClient, test_repo: str) -> None
 
     assert isinstance(result, ListFilesResponse)
     assert isinstance(result.files, list)
+
+
+def test_list_files_with_limit(client: GitblitClient, test_repo: str) -> None:
+    """Test listing files with limit parameter."""
+    result = client.list_files(repo=test_repo, limit=5)
+
+    if isinstance(result, ErrorResponse):
+        pytest.skip(f"Test repository '{test_repo}' not available")
+
+    assert isinstance(result, ListFilesResponse)
+    assert len(result.files) <= 5
+    assert isinstance(result.totalCount, int)
+    assert isinstance(result.limitHit, bool)
+
+    # If totalCount > limit, limitHit should be True
+    if result.totalCount > 5:
+        assert result.limitHit is True
+
+
+def test_list_files_with_offset(client: GitblitClient, test_repo: str) -> None:
+    """Test listing files with offset parameter."""
+    # Get first page
+    result1 = client.list_files(repo=test_repo, limit=5, offset=0)
+
+    if isinstance(result1, ErrorResponse):
+        pytest.skip(f"Test repository '{test_repo}' not available")
+
+    # Get second page
+    result2 = client.list_files(repo=test_repo, limit=5, offset=5)
+
+    if isinstance(result2, ErrorResponse):
+        pytest.skip(f"Test repository '{test_repo}' not available")
+
+    assert isinstance(result1, ListFilesResponse)
+    assert isinstance(result2, ListFilesResponse)
+
+    # If there are enough files, pages should be different
+    if result1.totalCount > 5 and result2.files:
+        page1_paths = {f.path for f in result1.files}
+        assert result2.files[0].path not in page1_paths

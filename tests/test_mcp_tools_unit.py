@@ -21,7 +21,6 @@ from gitblit_mcp_server.schemas import (
     GitblitAPIError,
     ListFilesResponse,
     ListReposResponse,
-    Pagination,
     ReadFileResponse,
     Repository,
     SearchChunk,
@@ -44,9 +43,8 @@ def create_mock_repos_response(
         ]
     return ListReposResponse(
         repositories=[Repository(**r) for r in repos],
-        pagination=Pagination(
-            totalCount=len(repos), hasNextPage=False, endCursor=None
-        ),
+        totalCount=len(repos),
+        limitHit=False,
     )
 
 
@@ -59,7 +57,11 @@ def create_mock_files_response(
             {"path": "src/", "isDirectory": True},
             {"path": "README.md", "isDirectory": False},
         ]
-    return ListFilesResponse(files=[FileInfo(**f) for f in files])
+    return ListFilesResponse(
+        files=[FileInfo(**f) for f in files],
+        totalCount=len(files),
+        limitHit=False,
+    )
 
 
 def create_mock_file_content_response(content: str = "1: test") -> ReadFileResponse:
@@ -152,11 +154,11 @@ class TestListReposToolUnit:
         mock_backend.list_repos.return_value = create_mock_repos_response([])
 
         await client.call_tool(
-            "list_repos", {"query": "test", "limit": 10, "after": "cursor"}
+            "list_repos", {"query": "test", "limit": 10, "offset": 20}
         )
 
         mock_backend.list_repos.assert_called_once_with(
-            query="test", limit=10, after="cursor"
+            query="test", limit=10, offset=20
         )
 
     async def test_error_response_raises_exception(self, mcp_client_with_mock) -> None:

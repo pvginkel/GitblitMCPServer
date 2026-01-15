@@ -6,7 +6,9 @@ from ..schemas import ErrorResponse, ListReposResponse
 
 
 def gb_list_repos(
-    query: str | None = None, limit: int = 50, after: str | None = None
+    query: str | None = None,
+    limit: int = 50,
+    offset: int = 0,
 ) -> ListReposResponse | ErrorResponse:
     """List repositories available in the Gitblit instance.
 
@@ -16,10 +18,10 @@ def gb_list_repos(
     Args:
         query: Optional search query to filter repositories by name. Uses substring matching.
         limit: Maximum number of repositories to return. Defaults to 50.
-        after: Pagination cursor for fetching results after this point.
+        offset: Number of results to skip for pagination. Defaults to 0.
 
     Returns:
-        ListReposResponse with repositories array and pagination info, or ErrorResponse on error.
+        ListReposResponse with repositories array, totalCount, and limitHit.
     """
     client = get_client()
-    return client.list_repos(query=query, limit=limit, after=after)
+    return client.list_repos(query=query, limit=limit, offset=offset)

@@ -26,7 +26,7 @@ class TestPathPatternFiltering:
     def test_path_pattern_wildcard_extension(self, client: GitblitClient) -> None:
         """Test filtering by file extension using *.ext pattern."""
         # Search for license-related content, filter to .txt files
-        result = client.search_files(query="license", path_pattern="*.txt", count=10)
+        result = client.search_files(query="license", path_pattern="*.txt", limit=10)
 
         if isinstance(result, ErrorResponse):
             pytest.skip("Search not available")
@@ -47,7 +47,7 @@ class TestPathPatternFiltering:
             query="namespace",
             repos=[test_repo],
             path_pattern="*Interop*",
-            count=10,
+            limit=10,
         )
 
         if isinstance(result, ErrorResponse):
@@ -71,14 +71,14 @@ class TestPathPatternFiltering:
         the actual filtering behavior.
         """
         # First search without filter
-        result_all = client.search_files(query="license", count=20)
+        result_all = client.search_files(query="license", limit=20)
 
         if isinstance(result_all, ErrorResponse):
             pytest.skip("Search not available")
 
         # Then search with .txt filter
         result_filtered = client.search_files(
-            query="license", path_pattern="*.txt", count=20
+            query="license", path_pattern="*.txt", limit=20
         )
 
         if isinstance(result_filtered, ErrorResponse):
@@ -96,7 +96,7 @@ class TestPathPatternFiltering:
         result = client.search_files(
             query="namespace",  # Common term
             path_pattern="*.nonexistent_extension_xyz",
-            count=10,
+            limit=10,
         )
 
         if isinstance(result, ErrorResponse):
@@ -113,7 +113,7 @@ class TestPathPatternFiltering:
             query="public",
             repos=[test_repo],
             path_pattern="*Interop*.cs",
-            count=10,
+            limit=10,
         )
 
         if isinstance(result, ErrorResponse):
@@ -136,7 +136,7 @@ class TestPathPatternMCPIntegration:
         """Test file_search tool with pathPattern parameter via MCP."""
         result = await mcp_client.call_tool(
             "file_search",
-            {"query": "namespace", "pathPattern": "*Interop*", "count": 5},
+            {"query": "namespace", "pathPattern": "*Interop*", "limit": 5},
         )
 
         content = result.content[0].text
@@ -151,7 +151,7 @@ class TestPathPatternMCPIntegration:
     ) -> None:
         """Test file_search with extension filter via MCP."""
         result = await mcp_client.call_tool(
-            "file_search", {"query": "license", "pathPattern": "*.txt", "count": 5}
+            "file_search", {"query": "license", "pathPattern": "*.txt", "limit": 5}
         )
 
         content = result.content[0].text
@@ -167,7 +167,7 @@ class TestPathPatternMCPIntegration:
                 "query": "interface",
                 "repos": [test_repo],
                 "pathPattern": "*.cs",
-                "count": 5,
+                "limit": 5,
             },
         )
 
@@ -187,12 +187,12 @@ class TestPathPatternEdgeCases:
         """
         # Try lowercase
         result_lower = client.search_files(
-            query="namespace", repos=[test_repo], path_pattern="*.cs", count=5
+            query="namespace", repos=[test_repo], path_pattern="*.cs", limit=5
         )
 
         # Try uppercase
         result_upper = client.search_files(
-            query="namespace", repos=[test_repo], path_pattern="*.CS", count=5
+            query="namespace", repos=[test_repo], path_pattern="*.CS", limit=5
         )
 
         # At least one should return results (depending on case sensitivity)
@@ -217,7 +217,7 @@ class TestPathPatternEdgeCases:
         """
         # This should not be interpreted as regex
         result = client.search_files(
-            query="test", path_pattern="*[test]*", count=5  # Literal brackets
+            query="test", path_pattern="*[test]*", limit=5  # Literal brackets
         )
 
         # Should not error - pattern is passed to Lucene as-is
@@ -230,7 +230,7 @@ class TestPathPatternEdgeCases:
     def test_path_pattern_empty_string(self, client: GitblitClient) -> None:
         """Test that empty pathPattern is handled gracefully."""
         # Empty string should be treated as no filter
-        result = client.search_files(query="namespace", path_pattern="", count=5)
+        result = client.search_files(query="namespace", path_pattern="", limit=5)
 
         # Should work normally
         if not isinstance(result, ErrorResponse):
@@ -238,7 +238,7 @@ class TestPathPatternEdgeCases:
 
     def test_path_pattern_single_asterisk(self, client: GitblitClient) -> None:
         """Test pathPattern with just a single asterisk (match all)."""
-        result = client.search_files(query="namespace", path_pattern="*", count=5)
+        result = client.search_files(query="namespace", path_pattern="*", limit=5)
 
         if isinstance(result, ErrorResponse):
             pytest.skip("Search not available")

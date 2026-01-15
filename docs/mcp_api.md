@@ -30,11 +30,11 @@ Lists repositories that match a search query. Use this tool to discover reposito
     },
     "limit": {
       "type": "integer",
-      "description": "Maximum number of repositories to return. Defaults to 50."
+      "description": "Maximum number of repositories to return. Defaults to 50, max 100."
     },
-    "after": {
-      "type": "string",
-      "description": "Pagination cursor for fetching results after this point."
+    "offset": {
+      "type": "integer",
+      "description": "Number of results to skip for pagination. Defaults to 0."
     }
   }
 }
@@ -45,7 +45,7 @@ Lists repositories that match a search query. Use this tool to discover reposito
 ```json
 {
   "type": "object",
-  "required": ["repositories", "pagination"],
+  "required": ["repositories", "totalCount", "limitHit"],
   "properties": {
     "repositories": {
       "type": "array",
@@ -72,20 +72,13 @@ Lists repositories that match a search query. Use this tool to discover reposito
         }
       }
     },
-    "pagination": {
-      "type": "object",
-      "required": ["totalCount", "hasNextPage"],
-      "properties": {
-        "totalCount": {
-          "type": "integer"
-        },
-        "hasNextPage": {
-          "type": "boolean"
-        },
-        "endCursor": {
-          "type": "string"
-        }
-      }
+    "totalCount": {
+      "type": "integer",
+      "description": "Total number of matching repositories"
+    },
+    "limitHit": {
+      "type": "boolean",
+      "description": "Whether more results exist beyond current page"
     }
   }
 }
@@ -134,6 +127,14 @@ Lists the files and subdirectories at a given path within a repository. Director
     "revision": {
       "type": "string",
       "description": "Branch, tag, or commit SHA. Defaults to HEAD of default branch."
+    },
+    "limit": {
+      "type": "integer",
+      "description": "Maximum number of files to return. Defaults to 100, max 1000."
+    },
+    "offset": {
+      "type": "integer",
+      "description": "Number of results to skip for pagination. Defaults to 0."
     }
   }
 }
@@ -144,7 +145,7 @@ Lists the files and subdirectories at a given path within a repository. Director
 ```json
 {
   "type": "object",
-  "required": ["files"],
+  "required": ["files", "totalCount", "limitHit"],
   "properties": {
     "files": {
       "type": "array",
@@ -161,6 +162,14 @@ Lists the files and subdirectories at a given path within a repository. Director
           }
         }
       }
+    },
+    "totalCount": {
+      "type": "integer",
+      "description": "Total number of files in directory"
+    },
+    "limitHit": {
+      "type": "boolean",
+      "description": "Whether more files exist beyond current page"
     }
   }
 }
@@ -289,9 +298,13 @@ Searches file contents (blobs) using Gitblit's Lucene index. Returns matching co
       "type": "string",
       "description": "Filter by branch (e.g., 'refs/heads/main'). If omitted, searches only each repository's default branch."
     },
-    "count": {
+    "limit": {
       "type": "integer",
-      "description": "Maximum number of results to return. Defaults to 25."
+      "description": "Maximum number of results to return. Defaults to 25, max 100."
+    },
+    "offset": {
+      "type": "integer",
+      "description": "Number of results to skip for pagination. Defaults to 0."
     },
     "contextLines": {
       "type": "integer",
@@ -306,12 +319,8 @@ Searches file contents (blobs) using Gitblit's Lucene index. Returns matching co
 ```json
 {
   "type": "object",
-  "required": ["query", "totalCount", "results", "limitHit"],
+  "required": ["totalCount", "results", "limitHit"],
   "properties": {
-    "query": {
-      "type": "string",
-      "description": "The executed search query"
-    },
     "totalCount": {
       "type": "integer",
       "description": "Total number of matches found"
@@ -411,9 +420,13 @@ Searches for commits by message content, author, or code changes. Use this to fi
       "type": "string",
       "description": "Filter by branch (e.g., 'refs/heads/main'). If omitted, searches only each repository's default branch."
     },
-    "count": {
+    "limit": {
       "type": "integer",
-      "description": "Maximum number of results. Defaults to 25."
+      "description": "Maximum number of results. Defaults to 25, max 100."
+    },
+    "offset": {
+      "type": "integer",
+      "description": "Number of results to skip for pagination. Defaults to 0."
     }
   }
 }
@@ -424,11 +437,8 @@ Searches for commits by message content, author, or code changes. Use this to fi
 ```json
 {
   "type": "object",
-  "required": ["query", "totalCount", "commits", "limitHit"],
+  "required": ["totalCount", "commits", "limitHit"],
   "properties": {
-    "query": {
-      "type": "string"
-    },
     "totalCount": {
       "type": "integer"
     },
@@ -507,6 +517,10 @@ Discovers files by path/name pattern using Git tree walking. Use this to find fi
     "limit": {
       "type": "integer",
       "description": "Maximum number of files to return. Defaults to 50, max 200."
+    },
+    "offset": {
+      "type": "integer",
+      "description": "Number of results to skip for pagination. Defaults to 0."
     }
   }
 }

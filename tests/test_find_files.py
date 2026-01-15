@@ -125,3 +125,35 @@ def test_find_files_with_revision(client: GitblitClient, test_repo: str) -> None
 
     assert isinstance(result, FindFilesResponse)
     # Just verify it returns successfully with revision parameter
+
+
+def test_find_files_with_offset(client: GitblitClient, test_repo: str) -> None:
+    """Test finding files with offset pagination."""
+    # Get first page
+    result1 = client.find_files(path_pattern="**/*", repos=[test_repo], limit=5, offset=0)
+
+    if isinstance(result1, ErrorResponse):
+        pytest.skip(f"Test repository '{test_repo}' not available")
+
+    # Get second page
+    result2 = client.find_files(path_pattern="**/*", repos=[test_repo], limit=5, offset=5)
+
+    if isinstance(result2, ErrorResponse):
+        pytest.skip(f"Test repository '{test_repo}' not available")
+
+    assert isinstance(result1, FindFilesResponse)
+    assert isinstance(result2, FindFilesResponse)
+
+    # If there are enough files, pages should be different
+    if result1.totalCount > 5 and result2.results:
+        page1_files = set()
+        for r in result1.results:
+            page1_files.update(r.files)
+
+        page2_files = set()
+        for r in result2.results:
+            page2_files.update(r.files)
+
+        # Pages should not overlap
+        if page2_files:
+            assert not page1_files.intersection(page2_files)

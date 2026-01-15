@@ -13,19 +13,12 @@ class Repository(BaseModel):  # type: ignore[misc]
     hasCommits: bool = Field(..., description="Whether repository has any commits")
 
 
-class Pagination(BaseModel):  # type: ignore[misc]
-    """Pagination information."""
-
-    totalCount: int = Field(..., description="Total number of items")
-    hasNextPage: bool = Field(..., description="Whether there are more results")
-    endCursor: str | None = Field(None, description="Pagination cursor for next page")
-
-
 class ListReposResponse(BaseModel):  # type: ignore[misc]
     """Response from list repositories endpoint."""
 
     repositories: list[Repository]
-    pagination: Pagination
+    totalCount: int = Field(..., description="Total number of matching repositories")
+    limitHit: bool = Field(..., description="Whether more results exist beyond current page")
 
 
 # File listing schemas
@@ -40,6 +33,8 @@ class ListFilesResponse(BaseModel):  # type: ignore[misc]
     """Response from list files endpoint."""
 
     files: list[FileInfo]
+    totalCount: int = Field(..., description="Total number of files in directory")
+    limitHit: bool = Field(..., description="Whether more files exist beyond current page")
 
 
 # File content schemas

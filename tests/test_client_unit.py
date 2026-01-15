@@ -42,11 +42,8 @@ class TestListReposClient:
                     "hasCommits": True,
                 }
             ],
-            "pagination": {
-                "totalCount": 1,
-                "hasNextPage": False,
-                "endCursor": None,
-            },
+            "totalCount": 1,
+            "limitHit": False,
         }
 
         with patch("httpx.get") as mock_get:
@@ -58,13 +55,14 @@ class TestListReposClient:
         assert isinstance(result, ListReposResponse)
         assert len(result.repositories) == 1
         assert result.repositories[0].name == "test/repo.git"
-        assert result.pagination.totalCount == 1
+        assert result.totalCount == 1
 
     def test_list_repos_empty(self, mock_client: GitblitClient) -> None:
         """Test list_repos with no repositories."""
         mock_response = {
             "repositories": [],
-            "pagination": {"totalCount": 0, "hasNextPage": False, "endCursor": None},
+            "totalCount": 0,
+            "limitHit": False,
         }
 
         with patch("httpx.get") as mock_get:
@@ -83,20 +81,17 @@ class TestListReposClient:
                 status_code=200,
                 json=lambda: {
                     "repositories": [],
-                    "pagination": {
-                        "totalCount": 100,
-                        "hasNextPage": True,
-                        "endCursor": "cursor123",
-                    },
+                    "totalCount": 100,
+                    "limitHit": True,
                 },
             )
-            mock_client.list_repos(query="test", limit=10, after="cursor_abc")
+            mock_client.list_repos(query="test", limit=10, offset=20)
 
         mock_get.assert_called_once()
         call_args = mock_get.call_args
         assert call_args.kwargs["params"]["query"] == "test"
         assert call_args.kwargs["params"]["limit"] == 10
-        assert call_args.kwargs["params"]["after"] == "cursor_abc"
+        assert call_args.kwargs["params"]["offset"] == 20
 
 
 class TestListFilesClient:
@@ -108,7 +103,9 @@ class TestListFilesClient:
             "files": [
                 {"path": "src/", "isDirectory": True},
                 {"path": "README.md", "isDirectory": False},
-            ]
+            ],
+            "totalCount": 2,
+            "limitHit": False,
         }
 
         with patch("httpx.get") as mock_get:
@@ -121,6 +118,8 @@ class TestListFilesClient:
         assert len(result.files) == 2
         assert result.files[0].isDirectory is True
         assert result.files[1].isDirectory is False
+        assert result.totalCount == 2
+        assert result.limitHit is False
 
     def test_list_files_with_path_and_revision(
         self, mock_client: GitblitClient
@@ -128,7 +127,8 @@ class TestListFilesClient:
         """Test list_files with path and revision parameters."""
         with patch("httpx.get") as mock_get:
             mock_get.return_value = MagicMock(
-                status_code=200, json=lambda: {"files": []}
+                status_code=200,
+                json=lambda: {"files": [], "totalCount": 0, "limitHit": False},
             )
             mock_client.list_files(repo="test.git", path="src/main", revision="develop")
 
@@ -219,7 +219,8 @@ class TestFileSearchClient:
                 repos=["repo1.git", "repo2.git"],
                 path_pattern="*.py",
                 branch="refs/heads/main",
-                count=50,
+                limit=50,
+                offset=10,
                 context_lines=20,
             )
 
@@ -229,7 +230,8 @@ class TestFileSearchClient:
         assert params["repos"] == "repo1.git,repo2.git"
         assert params["pathPattern"] == "*.py"
         assert params["branch"] == "refs/heads/main"
-        assert params["count"] == 50
+        assert params["limit"] == 50
+        assert params["offset"] == 10
         assert params["contextLines"] == 20
 
 
@@ -283,13 +285,15 @@ class TestCommitSearchClient:
                 query="test",
                 repos=["test.git"],
                 authors=["Alice", "Bob"],
-                count=10,
+                limit=10,
+                offset=5,
             )
 
         call_args = mock_get.call_args
         params = call_args.kwargs["params"]
         assert params["authors"] == "Alice,Bob"
-        assert params["count"] == 10
+        assert params["limit"] == 10
+        assert params["offset"] == 5
 
 
 class TestErrorHandling:
