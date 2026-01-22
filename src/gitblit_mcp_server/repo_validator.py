@@ -105,7 +105,10 @@ def _extract_repo_name(full_path: str) -> str:
 
 
 def find_similar_repos(
-    invalid_repo: str, all_repos: list[str], max_suggestions: int = 3
+    invalid_repo: str,
+    all_repos: list[str],
+    max_suggestions: int = 3,
+    max_relative_distance: float = 0.6,
 ) -> list[str]:
     """Find the most similar repository names using Levenshtein distance.
 
@@ -113,10 +116,15 @@ def find_similar_repos(
     to provide better semantic matching. For example, 'zigbee.git' will match
     'pvginkel/ZigbeeControl.git' based on comparing 'zigbee' to 'zigbeecontrol'.
 
+    Only returns matches where the edit distance is less than max_relative_distance
+    of the longer string's length. This filters out semantically unrelated matches.
+
     Args:
         invalid_repo: The invalid repository name to find suggestions for
         all_repos: List of all valid repository names (full paths)
         max_suggestions: Maximum number of suggestions to return
+        max_relative_distance: Maximum relative distance (0.0-1.0) to consider a match.
+            Default 0.6 (60%) filters out clearly unrelated repositories.
 
     Returns:
         List of similar repository names (full paths), sorted by similarity (best first)
@@ -128,15 +136,22 @@ def find_similar_repos(
     invalid_name = _extract_repo_name(invalid_repo)
 
     # Calculate distances based on repo names only
-    distances: list[tuple[int, str]] = []
+    candidates: list[tuple[float, str]] = []
     for repo in all_repos:
         repo_name = _extract_repo_name(repo)
         dist = levenshtein_distance(invalid_name, repo_name)
-        distances.append((dist, repo))
 
-    # Sort by distance (ascending) and return top suggestions (full paths)
-    distances.sort(key=lambda x: x[0])
-    return [repo for _, repo in distances[:max_suggestions]]
+        # Calculate relative distance (proportion of longer string that differs)
+        max_len = max(len(invalid_name), len(repo_name))
+        rel_dist = dist / max_len if max_len > 0 else 0.0
+
+        # Only include if within threshold
+        if rel_dist <= max_relative_distance:
+            candidates.append((rel_dist, repo))
+
+    # Sort by relative distance (ascending) and return top suggestions
+    candidates.sort(key=lambda x: x[0])
+    return [repo for _, repo in candidates[:max_suggestions]]
 
 
 def validate_repositories(repos: list[str]) -> None:

@@ -216,10 +216,12 @@ class TestEdgeCases:
         print(f"\n'pvginkel/DockerImages' (no .git) -> {suggestions}")
 
     def test_completely_wrong_guess(self, real_repo_names: list[str]) -> None:
-        """User makes a completely wrong guess - should still return something."""
+        """Completely wrong guesses return no suggestions (threshold filters them)."""
         suggestions = find_similar_repos("totally-nonexistent-project.git", real_repo_names)
-        assert len(suggestions) == 3  # Should return max suggestions even for bad guesses
-        print(f"\n'totally-nonexistent-project.git' -> {suggestions}")
+        # With the 60% threshold, completely unrelated repos are filtered out
+        # This is better than suggesting random repos like DokProject
+        assert len(suggestions) == 0
+        print(f"\n'totally-nonexistent-project.git' -> {suggestions} (correctly empty)")
 
     def test_special_characters_in_name(self, real_repo_names: list[str]) -> None:
         """Test repos with special characters like dots and hyphens."""
