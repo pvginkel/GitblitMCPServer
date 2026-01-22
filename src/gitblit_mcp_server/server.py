@@ -5,6 +5,7 @@ from typing import Annotated, Any
 from fastmcp import FastMCP  # type: ignore
 from pydantic import Field
 
+from .repo_validator import validate_repositories, validate_repository
 from .schemas import ErrorResponse, GitblitAPIError
 from .tools.commit_search import gb_commit_search
 from .tools.file_search import gb_file_search
@@ -162,6 +163,7 @@ def _register_tools(mcp: FastMCP) -> None:
             Field(description="Results to skip for pagination. Default: 0."),
         ] = 0,
     ) -> dict[str, Any]:
+        validate_repository(repo)
         result = gb_list_files(repo=repo, path=path, revision=revision, limit=limit, offset=offset)
         _check_error(result)
         return result.model_dump()
@@ -193,6 +195,7 @@ def _register_tools(mcp: FastMCP) -> None:
             Field(description="1-based ending line (inclusive). Omit to read to end of file."),
         ] = None,
     ) -> dict[str, Any]:
+        validate_repository(repo)
         result = gb_read_file(
             repo=repo,
             path=path,
@@ -242,6 +245,8 @@ def _register_tools(mcp: FastMCP) -> None:
             Field(description="Context lines around matches. Default: 10, max: 200."),
         ] = 10,
     ) -> dict[str, Any]:
+        if repos:
+            validate_repositories(repos)
         result = gb_file_search(
             query=query,
             repos=repos,
@@ -287,6 +292,7 @@ def _register_tools(mcp: FastMCP) -> None:
             Field(description="Results to skip for pagination. Default: 0."),
         ] = 0,
     ) -> dict[str, Any]:
+        validate_repositories(repos)
         result = gb_commit_search(
             query=query,
             repos=repos,
@@ -327,6 +333,8 @@ def _register_tools(mcp: FastMCP) -> None:
             Field(description="Results to skip for pagination. Default: 0."),
         ] = 0,
     ) -> dict[str, Any]:
+        if repos:
+            validate_repositories(repos)
         result = gb_find_files(
             pathPattern=pathPattern,
             repos=repos,

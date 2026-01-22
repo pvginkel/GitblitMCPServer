@@ -57,6 +57,15 @@ class Config:
             mcp_path_prefix = "/" + mcp_path_prefix
         self.mcp_path_prefix = mcp_path_prefix.rstrip("/")
 
+        # Repository cache TTL in seconds (default 10 minutes)
+        repo_cache_ttl_str = os.getenv("REPO_CACHE_TTL", "600")
+        try:
+            self.repo_cache_ttl = int(repo_cache_ttl_str)
+        except ValueError as e:
+            raise ConfigurationError(
+                f"Invalid REPO_CACHE_TTL: must be a number of seconds, got {repo_cache_ttl_str}"
+            ) from e
+
     @property
     def api_base_url(self) -> str:
         """Return the base URL for API endpoints."""

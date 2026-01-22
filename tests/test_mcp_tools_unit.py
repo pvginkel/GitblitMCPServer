@@ -124,11 +124,14 @@ def mock_gitblit_client():
 async def mcp_client_with_mock(mock_gitblit_client):
     """Create an MCP client with mocked backend."""
     # Patch at the tool module level where get_client is imported
+    # Also patch repo_validator to avoid network calls during validation
     with patch("gitblit_mcp_server.tools.list_repos.get_client", return_value=mock_gitblit_client), \
          patch("gitblit_mcp_server.tools.list_files.get_client", return_value=mock_gitblit_client), \
          patch("gitblit_mcp_server.tools.read_file.get_client", return_value=mock_gitblit_client), \
          patch("gitblit_mcp_server.tools.file_search.get_client", return_value=mock_gitblit_client), \
-         patch("gitblit_mcp_server.tools.commit_search.get_client", return_value=mock_gitblit_client):
+         patch("gitblit_mcp_server.tools.commit_search.get_client", return_value=mock_gitblit_client), \
+         patch("gitblit_mcp_server.server.validate_repository"), \
+         patch("gitblit_mcp_server.server.validate_repositories"):
         server = get_server()
         async with Client(server) as client:
             yield client, mock_gitblit_client
