@@ -178,7 +178,11 @@ def validate_repositories(repos: list[str]) -> None:
         for invalid_repo in invalid_repos:
             suggestions = find_similar_repos(invalid_repo, all_repo_names)
             if suggestions:
-                suggestions_str = ", ".join(f"'{s}'" for s in suggestions)
+                quoted = [f"'{s}'" for s in suggestions]
+                if len(quoted) == 1:
+                    suggestions_str = quoted[0]
+                else:
+                    suggestions_str = ", ".join(quoted[:-1]) + " or " + quoted[-1]
                 error_parts.append(
                     f"Repository '{invalid_repo}' not found. Did you mean: {suggestions_str}?"
                 )
