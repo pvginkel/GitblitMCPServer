@@ -1,0 +1,51 @@
+schemaVersion: "0.1"
+producer: gitblit-mcp-server
+
+applicationComponents:
+  - id: app:gitblit-mcp-server,34404f56-6f1e-4579-b515-728a59747bcc
+    label: Gitblit MCP Server
+    summary: >-
+      MCP (Model Context Protocol) server that gives AI assistants read access
+      to Gitblit-hosted Git repositories (repo/file browsing, content and commit
+      search) by delegating to the Gitblit Search API Plugin.
+    introduced: 2026-01-12
+    lifecycle: active
+    stereotype: SoftwareProduct
+    sourceRepository: git:pvginkel/GitblitMCPServer
+    stats:
+      image: registry:5000/gitblit-mcp-server
+
+applicationServices:
+  - id: svc:gitblit-mcp,bb4a54e8-2b13-4bcb-842e-99f111108ecc
+    label: Gitblit MCP API
+    summary: >-
+      MCP protocol surface exposing the gb_list_repos, gb_list_files,
+      gb_read_file, gb_file_search, gb_commit_search and gb_find_files tools.
+    introduced: 2026-01-12
+    lifecycle: active
+
+applicationInterfaces:
+  - id: if:gitblit-mcp-sse,33622998-9147-4759-817b-d85b9c23cfce
+    label: MCP SSE endpoint
+    summary: >-
+      HTTP/SSE transport (/sse and /messages/) consumed by MCP clients such as
+      AI assistants and LLM-based coding tools.
+    introduced: 2026-01-12
+    lifecycle: active
+
+relations:
+  - id: rel:gitblit-mcp-server-realizes-mcp-api
+    source: app:gitblit-mcp-server,34404f56-6f1e-4579-b515-728a59747bcc
+    target: svc:gitblit-mcp,bb4a54e8-2b13-4bcb-842e-99f111108ecc
+    type: Realization
+
+  - id: rel:gitblit-mcp-sse-assigned-to-mcp-api
+    source: if:gitblit-mcp-sse,33622998-9147-4759-817b-d85b9c23cfce
+    target: svc:gitblit-mcp,bb4a54e8-2b13-4bcb-842e-99f111108ecc
+    type: Assignment
+
+  - id: rel:gitblit-mcp-server-consumes-source-control
+    source: app:gitblit-mcp-server,34404f56-6f1e-4579-b515-728a59747bcc
+    target: cap:source-control
+    type: Association
+    boundBy: "env:GITBLIT_URL"
