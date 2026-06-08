@@ -39,6 +39,15 @@ relations:
     target: svc:gitblit-mcp,bb4a54e8-2b13-4bcb-842e-99f111108ecc
     type: Realization
 
+  # Uniform "is an MCP server" capability, consumed by MCP clients (e.g. the
+  # intercom realtime voice device) to discover this server alongside its
+  # specific svc:gitblit-mcp surface. Declared here on the owning producer so
+  # deployers resolve it from the merged dataset.
+  - id: rel:gitblit-mcp-server-realizes-mcp-cap
+    source: app:gitblit-mcp-server,34404f56-6f1e-4579-b515-728a59747bcc
+    target: cap:mcp
+    type: Realization
+
   - id: rel:gitblit-mcp-sse-assigned-to-mcp-api
     source: if:gitblit-mcp-sse,33622998-9147-4759-817b-d85b9c23cfce
     target: svc:gitblit-mcp,bb4a54e8-2b13-4bcb-842e-99f111108ecc
