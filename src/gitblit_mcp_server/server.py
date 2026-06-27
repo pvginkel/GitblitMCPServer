@@ -5,6 +5,7 @@ from typing import Annotated, Any
 from fastmcp import FastMCP  # type: ignore
 from pydantic import Field
 
+from .config import get_config
 from .repo_validator import validate_repositories, validate_repository
 from .schemas import ErrorResponse, GitblitAPIError
 from .tools.commit_search import gb_commit_search
@@ -28,7 +29,13 @@ def get_server() -> FastMCP:
     """Get or create the FastMCP server instance."""
     global _mcp
     if _mcp is None:
-        _mcp = FastMCP("Gitblit MCP Server")
+        # Only pass instructions when configured, so an unset MCP_INSTRUCTIONS
+        # leaves FastMCP's built-in default in place.
+        kwargs: dict[str, Any] = {}
+        instructions = get_config().mcp_instructions
+        if instructions is not None:
+            kwargs["instructions"] = instructions
+        _mcp = FastMCP("Gitblit MCP Server", **kwargs)
         _register_tools(_mcp)
     return _mcp
 

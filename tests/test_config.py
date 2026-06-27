@@ -128,3 +128,42 @@ def test_config_mcp_path_prefix_strips_trailing_slash(monkeypatch: pytest.Monkey
 
     cfg = config.get_config()
     assert cfg.mcp_path_prefix == "/api/mcp"
+
+
+def test_config_mcp_instructions_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that instructions default to None when unset."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
+    monkeypatch.delenv("MCP_INSTRUCTIONS", raising=False)
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    cfg = config.get_config()
+    assert cfg.mcp_instructions is None
+
+
+def test_config_mcp_instructions_custom(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test custom instructions from environment."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
+    monkeypatch.setenv("MCP_INSTRUCTIONS", "Use the gb_* tools to browse repositories.")
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    cfg = config.get_config()
+    assert cfg.mcp_instructions == "Use the gb_* tools to browse repositories."
+
+
+def test_config_mcp_instructions_empty_is_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that an empty instructions value is treated as unset."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
+    monkeypatch.setenv("MCP_INSTRUCTIONS", "")
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    cfg = config.get_config()
+    assert cfg.mcp_instructions is None

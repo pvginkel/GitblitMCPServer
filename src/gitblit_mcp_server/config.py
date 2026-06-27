@@ -66,6 +66,11 @@ class Config:
                 f"Invalid REPO_CACHE_TTL: must be a number of seconds, got {repo_cache_ttl_str}"
             ) from e
 
+        # Instructions surfaced in the MCP initialize response.
+        # Omit (or leave empty) to keep the server's built-in default.
+        instructions = os.getenv("MCP_INSTRUCTIONS")
+        self.mcp_instructions = instructions if instructions else None
+
     @property
     def api_base_url(self) -> str:
         """Return the base URL for API endpoints."""
