@@ -7,6 +7,10 @@
 .vscode
 .gitignore
 .dockerignore
+.venv
+.mypy_cache
+.ruff_cache
+.pytest_cache
 .env
 .env.*
 docs

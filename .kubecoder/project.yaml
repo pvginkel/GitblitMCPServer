@@ -15,10 +15,37 @@ projects:
     # `:dev` is deliberately a tag Jenkins never publishes (it owns `latest` and
     # the build numbers), so a build from here cannot clobber the deployed image.
     build: kaniko --destination registry:5000/gitblit-mcp-server:dev
-    test: cexec python poetry run pytest
+    # Eight of the fourteen test files drive a live Gitblit at $GITBLIT_URL
+    # (tests/.env.test pins it to a LAN address), which no KubeCoder
+    # environment can reach: whole-suite is 56 failed / 95 passed / 27 skipped
+    # in 4m40s, nearly all of it connection timeouts. What is left is the
+    # hermetic 92, green in under a second.
+    #
+    # Deselected rather than selected so a new test file is gated by default.
+    # The proper repair is upstream: conftest.py already registers an
+    # `integration` marker that no test applies, so `-m "not integration"`
+    # deselects nothing. Mark those eight files and this list collapses to it.
+    test:
+      - >-
+        cexec python poetry run pytest
+        --ignore=tests/test_list_repos.py
+        --ignore=tests/test_list_files.py
+        --ignore=tests/test_read_file.py
+        --ignore=tests/test_file_search.py
+        --ignore=tests/test_commit_search.py
+        --ignore=tests/test_find_files.py
+        --ignore=tests/test_path_pattern.py
+        --ignore=tests/test_mcp_integration.py
+      # The one class in test_mcp_integration.py that needs no server: it
+      # asserts every MCP tool is exposed and described.
+      - cexec python poetry run pytest tests/test_mcp_integration.py::TestToolDiscovery
     lint:
       - cexec python poetry run ruff check .
-      - cexec python poetry run mypy .
+      # `mypy .` cannot run here: run.py imports the package through `src.`,
+      # so mypy sees every module twice and stops before checking anything.
+      # `src` is what README documents and it is clean; `mypy src tests` adds
+      # 67 pre-existing strict-mode errors in untyped test code.
+      - cexec python poetry run mypy src
       # The architecture-as-code artifact, validated exactly as
       # Jenkinsfile.architecture validates it. Needs outbound HTTPS.
       - ./scripts/arch-validate.py docs/architecture/*.yaml
