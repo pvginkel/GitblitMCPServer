@@ -1,0 +1,26 @@
+# The build context is tarred and streamed to the image builder on every build,
+# so keep it to what the Dockerfile actually COPYs: pyproject.toml, poetry.lock,
+# run.py and src/.
+.git
+.claude
+.kubecoder
+.vscode
+.gitignore
+.dockerignore
+.env
+.env.*
+docs
+tests
+scripts
+Jenkinsfile
+Jenkinsfile.architecture
+*.code-workspace
+README.md
+AGENTS.md
+CLAUDE.md
+LICENSE
+__pycache__
+**/__pycache__
+*.pyc
+.coverage
+/tmp

@@ -13,10 +13,13 @@ GitblitMCPServer/           # MCP server (Python/FastMCP)
 ├── Dockerfile              # Container build
 └── .env.example            # Environment configuration template
 
-../GitblitSearchApiPlugin/  # Companion Java plugin for Gitblit
+../GitblitMCPSupportPlugin/ # Companion Java plugin for Gitblit
 ├── src/main/java/          # Java source code
 └── pom.xml                 # Maven build
 ```
+
+The plugin is cloned alongside this repo in the KubeCoder environment
+(`.kubecoder/config.yaml`), so `../GitblitMCPSupportPlugin` is a real path here.
 
 ## Architecture
 
@@ -42,27 +45,37 @@ The MCP server uses environment variables (supports `.env` files):
 
 ### MCP Server (Python)
 
+The curated entry points are in `.kubecoder/project.yaml`; prefer them over
+ad-hoc commands:
+
 ```bash
-# Install dependencies
-poetry install
-
-# Run server
-poetry run python -m gitblit_mcp_server
-
-# Run tests
-poetry run pytest
-
-# Lint and type check
-poetry run ruff check .
-poetry run mypy .
+kc project setup   # poetry install
+kc project build   # build the container image with kaniko
+kc project test    # pytest
+kc project lint    # ruff, mypy, and the architecture artifact validation
 ```
 
-### Search API Plugin (Java)
+Python lives in the `python` tool container, so a one-off command is prefixed
+with `cexec python`:
 
 ```bash
-cd ../GitblitSearchApiPlugin
-mvn clean package
-# Deploy JAR to Gitblit plugins directory
+# Run the server
+cexec python poetry run python -m gitblit_mcp_server
+
+# Run part of the suite
+cexec python poetry run pytest tests/test_config.py
+```
+
+### MCP Support Plugin (Java)
+
+Maven lives in the `java` tool container. The plugin has its own curated
+automation:
+
+```bash
+cd ../GitblitMCPSupportPlugin
+kc project setup   # seed the Gitblit JAR into the local Maven repository
+kc project build   # mvn clean package -DskipTests
+# Deploy target/mcp-support-plugin-*.zip to the Gitblit plugins directory
 ```
 
 ## MCP Tools

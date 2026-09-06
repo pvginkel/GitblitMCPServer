@@ -1,0 +1,24 @@
+# Curated automation for the Gitblit MCP server.
+# Schema: https://kubecoder.home/help/reference/project-yaml/
+
+projects:
+  root:
+    description: >-
+      Gitblit MCP server — a Python/FastMCP protocol adapter exposing Gitblit
+      repositories to AI assistants over MCP by calling the Gitblit MCP Support
+      Plugin's REST API.
+    # The image build. AaC/GitblitMCPServer is this repo's second Jenkins job:
+    # the architecture-as-code producer that runs Jenkinsfile.architecture.
+    jenkins: Gitblit/GitblitMCPServer
+    setup: cexec python poetry install --no-interaction
+    # The container image is the deliverable; there is nothing else to compile.
+    # `:dev` is deliberately a tag Jenkins never publishes (it owns `latest` and
+    # the build numbers), so a build from here cannot clobber the deployed image.
+    build: kaniko --destination registry:5000/gitblit-mcp-server:dev
+    test: cexec python poetry run pytest
+    lint:
+      - cexec python poetry run ruff check .
+      - cexec python poetry run mypy .
+      # The architecture-as-code artifact, validated exactly as
+      # Jenkinsfile.architecture validates it. Needs outbound HTTPS.
+      - ./scripts/arch-validate.py docs/architecture/*.yaml

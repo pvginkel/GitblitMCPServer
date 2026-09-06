@@ -1,0 +1,37 @@
+# The environment for the Gitblit MCP server and its companion Gitblit plugin.
+# Schema: https://kubecoder.home/help/reference/config-yaml/
+
+repos:
+  # The Java/Maven Gitblit plugin serving the /api/.mcp-internal REST API this
+  # server adapts. Worked on and built from here; it carries its own
+  # .kubecoder/project.yaml and gets its own onboarding run.
+  - url: https://github.com/pvginkel/GitblitMCPSupportPlugin
+
+capabilities:
+  github: rw
+
+tools:
+  - use: python # this repo: Poetry, pytest, Ruff, mypy
+  - use: java # GitblitMCPSupportPlugin: OpenJDK and Maven
+
+# Both repos ship a Dockerfile that Jenkins builds with kaniko; `kaniko` in the
+# dev container is how they are built here.
+imageBuilder: true
+
+# The MCP server's HTTP/SSE endpoint when it is run from this environment.
+ports:
+  - name: mcp
+    port: 8000
+    type: http
+    sslOffload: true
+
+# Maven's local repository. The plugin's setup seeds the Gitblit JAR into it
+# with `mvn install:install-file`; without this it is re-seeded, and every
+# Maven plugin re-downloaded, on each pod start.
+homeOverlays:
+  - .m2
+
+# Both repos' setup, so a pod start leaves the whole environment buildable.
+setup:
+  - kc project setup
+  - cd /work/GitblitMCPSupportPlugin && kc project setup
