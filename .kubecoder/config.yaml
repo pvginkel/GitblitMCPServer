@@ -25,12 +25,6 @@ ports:
     type: http
     sslOffload: true
 
-# Maven's local repository. The plugin's setup seeds the Gitblit JAR into it
-# with `mvn install:install-file`; without this it is re-seeded, and every
-# Maven plugin re-downloaded, on each pod start.
-homeOverlays:
-  - .m2
-
 # Both repos' setup, so a pod start leaves the whole environment buildable.
 setup:
   - kc project setup
