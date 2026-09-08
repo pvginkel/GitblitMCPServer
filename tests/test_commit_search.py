@@ -4,6 +4,8 @@ import pytest
 from gitblit_mcp_server.client import GitblitClient
 from gitblit_mcp_server.schemas import CommitSearchResponse, ErrorResponse
 
+pytestmark = pytest.mark.integration
+
 
 def test_commit_search_basic(client: GitblitClient, test_repo: str) -> None:
     """Test basic commit search with wildcard query."""

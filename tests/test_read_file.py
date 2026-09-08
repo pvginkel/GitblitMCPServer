@@ -4,6 +4,8 @@ import pytest
 from gitblit_mcp_server.client import GitblitClient
 from gitblit_mcp_server.schemas import ErrorResponse, ReadFileResponse
 
+pytestmark = pytest.mark.integration
+
 
 def test_read_file_basic(client: GitblitClient, test_repo: str) -> None:
     """Test reading a file from repository."""

@@ -4,6 +4,8 @@ import pytest
 from gitblit_mcp_server.client import GitblitClient
 from gitblit_mcp_server.schemas import ErrorResponse, FindFilesResponse
 
+pytestmark = pytest.mark.integration
+
 
 def test_find_files_basic(client: GitblitClient) -> None:
     """Test finding files with a simple pattern."""

@@ -1,8 +1,11 @@
 """Tests for gb_list_repos tool."""
 
 
+import pytest
 from gitblit_mcp_server.client import GitblitClient
 from gitblit_mcp_server.schemas import ListReposResponse
+
+pytestmark = pytest.mark.integration
 
 
 def test_list_repos_no_filters(client: GitblitClient) -> None:

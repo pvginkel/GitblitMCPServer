@@ -10,6 +10,8 @@ from gitblit_mcp_server.client import GitblitClient
 from gitblit_mcp_server.schemas import ErrorResponse, FileSearchResponse
 from gitblit_mcp_server.server import get_server
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.fixture
 async def mcp_client():

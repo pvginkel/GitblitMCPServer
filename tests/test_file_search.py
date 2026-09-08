@@ -4,6 +4,8 @@ import pytest
 from gitblit_mcp_server.client import GitblitClient
 from gitblit_mcp_server.schemas import ErrorResponse, FileSearchResponse
 
+pytestmark = pytest.mark.integration
+
 
 def test_file_search_basic(client: GitblitClient) -> None:
     """Test basic file content search."""

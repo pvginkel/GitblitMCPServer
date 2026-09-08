@@ -19,25 +19,17 @@ projects:
     # (tests/.env.test pins it to a LAN address), which no KubeCoder
     # environment can reach: whole-suite is 56 failed / 95 passed / 27 skipped
     # in 4m40s, nearly all of it connection timeouts. What is left is the
-    # hermetic 92, green in under a second.
+    # hermetic 92 — the 90 below plus the two discovery tests — green in
+    # under a second.
     #
-    # Deselected rather than selected so a new test file is gated by default.
-    # The proper repair is upstream: conftest.py already registers an
-    # `integration` marker that no test applies, so `-m "not integration"`
-    # deselects nothing. Mark those eight files and this list collapses to it.
+    # Those eight files carry `pytestmark = pytest.mark.integration`, which
+    # `-m` deselects. Deselected rather than selected so a new test file is
+    # gated by default: it runs here unless it marks itself integration.
     test:
-      - >-
-        cexec python poetry run pytest
-        --ignore=tests/test_list_repos.py
-        --ignore=tests/test_list_files.py
-        --ignore=tests/test_read_file.py
-        --ignore=tests/test_file_search.py
-        --ignore=tests/test_commit_search.py
-        --ignore=tests/test_find_files.py
-        --ignore=tests/test_path_pattern.py
-        --ignore=tests/test_mcp_integration.py
+      - cexec python poetry run pytest -m "not integration"
       # The one class in test_mcp_integration.py that needs no server: it
-      # asserts every MCP tool is exposed and described.
+      # asserts every MCP tool is exposed and described. Selected by node id,
+      # which the module-level marker does not deselect.
       - cexec python poetry run pytest tests/test_mcp_integration.py::TestToolDiscovery
     lint:
       - cexec python poetry run ruff check .

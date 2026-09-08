@@ -10,6 +10,8 @@ from fastmcp import Client
 from fastmcp.exceptions import ToolError
 from gitblit_mcp_server.server import get_server
 
+pytestmark = pytest.mark.integration
+
 
 @pytest.fixture
 async def mcp_client():
