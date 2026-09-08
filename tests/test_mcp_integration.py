@@ -7,6 +7,7 @@ Gitblit server.
 
 import pytest
 from fastmcp import Client
+from fastmcp.exceptions import ToolError
 from gitblit_mcp_server.server import get_server
 
 
@@ -147,7 +148,7 @@ class TestReadFileTool:
         self, mcp_client: Client, test_repo: str
     ) -> None:
         """Test reading a directory path raises error."""
-        with pytest.raises(Exception):
+        with pytest.raises(ToolError):
             await mcp_client.call_tool(
                 "read_file", {"repo": test_repo, "path": "NetIde.Project"}
             )

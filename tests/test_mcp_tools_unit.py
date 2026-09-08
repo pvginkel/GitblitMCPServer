@@ -9,6 +9,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastmcp import Client
+from fastmcp.exceptions import ToolError
 from gitblit_mcp_server.schemas import (
     CommitSearchResponse,
     CommitSearchResult,
@@ -318,7 +319,7 @@ class TestCommitSearchToolUnit:
         client, mock_backend = mcp_client_with_mock
 
         # FastMCP should validate required parameters
-        with pytest.raises(Exception):
+        with pytest.raises(ToolError):
             await client.call_tool("commit_search", {"query": "test"})
 
 
