@@ -4,7 +4,7 @@
 repos:
   # The Java/Maven Gitblit plugin serving the /api/.mcp-internal REST API this
   # server adapts. Worked on and built from here; it carries its own
-  # .kubecoder/project.yaml and gets its own onboarding run.
+  # .kubecoder/project.yaml.
   - url: https://github.com/pvginkel/GitblitMCPSupportPlugin
 
 capabilities:
@@ -25,7 +25,8 @@ ports:
     type: http
     sslOffload: true
 
-# Both repos' setup, so a pod start leaves the whole environment buildable.
+# A pod start runs this repo's setup only. The plugin is set up from its own
+# directory, where `kc project` reads its manifest:
+# `cd /work/GitblitMCPSupportPlugin && kc project setup`.
 setup:
   - kc project setup
-  - cd /work/GitblitMCPSupportPlugin && kc project setup
