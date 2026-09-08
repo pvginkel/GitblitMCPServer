@@ -12,9 +12,10 @@ projects:
     jenkins: Gitblit/GitblitMCPServer
     setup: cexec python poetry install --no-interaction
     # The container image is the deliverable; there is nothing else to compile.
-    # `:dev` is deliberately a tag Jenkins never publishes (it owns `latest` and
-    # the build numbers), so a build from here cannot clobber the deployed image.
-    build: kaniko --destination registry:5000/gitblit-mcp-server:dev
+    # The verb proves the Dockerfile and the build context and pushes nothing:
+    # Jenkins owns every published tag, so nothing built here can reach a
+    # registry, let alone the deployed image.
+    build: kaniko --context . --no-push
     # Eight of the fourteen test files drive a live Gitblit at $GITBLIT_URL
     # (tests/.env.test pins it to a LAN address), which no KubeCoder
     # environment can reach: whole-suite is 56 failed / 95 passed / 27 skipped
