@@ -20,7 +20,6 @@ Jenkinsfile
 Jenkinsfile.architecture
 *.code-workspace
 README.md
-AGENTS.md
 CLAUDE.md
 LICENSE
 __pycache__
