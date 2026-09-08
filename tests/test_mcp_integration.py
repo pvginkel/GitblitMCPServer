@@ -7,7 +7,6 @@ Gitblit server.
 
 import pytest
 from fastmcp import Client
-
 from gitblit_mcp_server.server import get_server
 
 

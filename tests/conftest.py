@@ -7,7 +7,6 @@ from typing import Any
 
 import pytest
 from dotenv import load_dotenv
-
 from gitblit_mcp_server import client as client_module
 from gitblit_mcp_server import config as config_module
 from gitblit_mcp_server import server as server_module

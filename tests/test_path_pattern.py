@@ -6,7 +6,6 @@ after the fix for the quoting issue in the Gitblit Search API Plugin.
 
 import pytest
 from fastmcp import Client
-
 from gitblit_mcp_server.client import GitblitClient
 from gitblit_mcp_server.schemas import ErrorResponse, FileSearchResponse
 from gitblit_mcp_server.server import get_server

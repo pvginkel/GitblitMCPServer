@@ -9,7 +9,6 @@ from unittest.mock import MagicMock, patch
 
 import httpx
 import pytest
-
 from gitblit_mcp_server.client import GitblitClient
 from gitblit_mcp_server.schemas import (
     CommitSearchResponse,

@@ -9,7 +9,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastmcp import Client
-
 from gitblit_mcp_server.schemas import (
     CommitSearchResponse,
     CommitSearchResult,
@@ -18,7 +17,6 @@ from gitblit_mcp_server.schemas import (
     FileInfo,
     FileSearchResponse,
     FileSearchResult,
-    GitblitAPIError,
     ListFilesResponse,
     ListReposResponse,
     ReadFileResponse,
