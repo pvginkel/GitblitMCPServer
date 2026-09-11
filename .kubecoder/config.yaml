@@ -24,9 +24,3 @@ ports:
     port: 8000
     type: http
     sslOffload: true
-
-# A pod start runs this repo's setup only. The plugin is set up from its own
-# directory, where `kc project` reads its manifest:
-# `cd /work/GitblitMCPSupportPlugin && kc project setup`.
-setup:
-  - kc project setup
