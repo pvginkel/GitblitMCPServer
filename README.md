@@ -65,6 +65,11 @@ Configure via environment variables or a `.env` file:
 | `MCP_PORT` | No | `8000` | Port for the MCP server HTTP endpoint |
 | `MCP_HOST` | No | `0.0.0.0` | Host to bind to (use `127.0.0.1` for local-only access) |
 | `MCP_PATH_PREFIX` | No | - | Path prefix for reverse proxy setups (e.g., `/api/mcp`) |
+| `MCP_TRANSPORT` | No | `sse` | `sse` (legacy SSE: `/sse` and `/messages/`) or `http` (streamable HTTP at `/mcp`, run stateless). Both paths sit under `MCP_PATH_PREFIX`. |
+
+### Transport
+
+Prefer `MCP_TRANSPORT=http`. The server keeps no sessions in that mode — the tools hold no per-session state — so a restart cannot strand a client. Over SSE the session lives in the server process: a restart loses it, and a client whose SSE reconnect fails (Claude Code, when the retry lands while the server is still down) keeps POSTing to the lost session and gets `404 Could not find session` on every call until it reconnects by hand.
 
 ## MCP Tools
 

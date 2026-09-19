@@ -14,21 +14,41 @@ def main() -> None:
         # Validate configuration on startup
         config = get_config()
 
-        # Configure SSE paths before starting server
+        # Configure endpoint paths before starting server
         # Read defaults first, then prepend prefix
         fastmcp.settings.sse_path = config.mcp_path_prefix + fastmcp.settings.sse_path
         fastmcp.settings.message_path = config.mcp_path_prefix + fastmcp.settings.message_path
+        fastmcp.settings.streamable_http_path = (
+            config.mcp_path_prefix + fastmcp.settings.streamable_http_path
+        )
+        endpoint_path = (
+            fastmcp.settings.sse_path
+            if config.transport == "sse"
+            else fastmcp.settings.streamable_http_path
+        )
 
         print("Gitblit MCP Server starting...", file=sys.stderr)
         print(f"Backend: {config.api_base_url}", file=sys.stderr)
         print(
-            f"MCP server: http://{config.mcp_host}:{config.mcp_port}{fastmcp.settings.sse_path}",
+            f"MCP server: {config.transport} on "
+            f"http://{config.mcp_host}:{config.mcp_port}{endpoint_path}",
             file=sys.stderr,
         )
 
-        # Get the server instance and run with SSE transport (HTTP)
         server = get_server()
-        server.run(transport="sse", host=config.mcp_host, port=config.mcp_port)
+        if config.transport == "sse":
+            server.run(transport="sse", host=config.mcp_host, port=config.mcp_port)
+        else:
+            # Stateless: the tools keep no per-session state, so the server
+            # keeps no sessions either. A restart cannot strand a client on a
+            # session id it no longer knows, and sessions that clients abandon
+            # without a DELETE never pile up in memory.
+            server.run(
+                transport="http",
+                host=config.mcp_host,
+                port=config.mcp_port,
+                stateless_http=True,
+            )
 
     except ConfigurationError as e:
         print(f"Configuration error: {e}", file=sys.stderr)

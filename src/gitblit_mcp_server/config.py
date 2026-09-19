@@ -50,8 +50,18 @@ class Config:
         # MCP server host (default 0.0.0.0)
         self.mcp_host = os.getenv("MCP_HOST", "0.0.0.0")
 
-        # MCP path prefix (default empty, meaning /sse and /messages/)
-        # Set to e.g. "/api/mcp" to get /api/mcp/sse and /api/mcp/messages/
+        # Transport this server exposes: "sse" (legacy) or "http" (streamable
+        # HTTP, run stateless — see __main__.py)
+        transport = os.getenv("MCP_TRANSPORT", "sse").strip().lower()
+        if transport not in ("sse", "http"):
+            raise ConfigurationError(
+                f"Invalid MCP_TRANSPORT: must be 'sse' or 'http', got {transport}"
+            )
+        self.transport = transport
+
+        # MCP path prefix (default empty, meaning /sse and /messages/, or /mcp)
+        # Set to e.g. "/api/mcp" to get /api/mcp/sse and /api/mcp/messages/,
+        # or /api/mcp/mcp
         mcp_path_prefix = os.getenv("MCP_PATH_PREFIX", "")
         if mcp_path_prefix and not mcp_path_prefix.startswith("/"):
             mcp_path_prefix = "/" + mcp_path_prefix

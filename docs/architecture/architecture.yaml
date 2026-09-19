@@ -26,9 +26,10 @@ applicationServices:
 
 applicationInterfaces:
   - id: if:gitblit-mcp-sse,33622998-9147-4759-817b-d85b9c23cfce
-    label: MCP SSE endpoint
+    label: MCP endpoint
     summary: >-
-      HTTP/SSE transport (/sse and /messages/) consumed by MCP clients such as
+      Streamable HTTP (/mcp, stateless) or legacy SSE (/sse and /messages/)
+      transport, selected by MCP_TRANSPORT, consumed by MCP clients such as
       AI assistants and LLM-based coding tools.
     introduced: 2026-01-12
     lifecycle: active

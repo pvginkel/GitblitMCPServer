@@ -167,3 +167,44 @@ def test_config_mcp_instructions_empty_is_none(monkeypatch: pytest.MonkeyPatch) 
 
     cfg = config.get_config()
     assert cfg.mcp_instructions is None
+
+
+def test_config_transport_default(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that the transport defaults to SSE."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
+    monkeypatch.delenv("MCP_TRANSPORT", raising=False)
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    cfg = config.get_config()
+    assert cfg.transport == "sse"
+
+
+def test_config_transport_http(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test streamable HTTP transport from environment, case-insensitively."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
+    monkeypatch.setenv("MCP_TRANSPORT", "HTTP")
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    cfg = config.get_config()
+    assert cfg.transport == "http"
+
+
+def test_config_transport_invalid(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test that an unknown transport is rejected."""
+    monkeypatch.setenv("GITBLIT_URL", "http://10.1.2.3")
+    monkeypatch.setenv("MCP_TRANSPORT", "stdio")
+
+    from gitblit_mcp_server import config
+
+    config._config = None
+
+    with pytest.raises(ConfigurationError) as exc_info:
+        config.get_config()
+
+    assert "MCP_TRANSPORT" in str(exc_info.value)
