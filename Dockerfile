@@ -26,8 +26,6 @@ WORKDIR /app
 
 COPY --from=build /app /app
 
-RUN echo 1 && find
-
 ENV PATH="/app/.venv/bin:${PATH}" \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
