@@ -22,6 +22,7 @@ All successful responses return HTTP 200 with a JSON body.
 - `400` - Bad request (missing/invalid parameters)
 - `404` - Resource not found
 - `500` - Internal server error
+- `503` - Dead Lucene index writers found (`/health` only)
 
 ---
 
@@ -312,6 +313,44 @@ The search is automatically scoped to `type:commit`.
 
 ```bash
 curl "http://gitblit:8080/api/.mcp-internal/search/commits?query=bug%20fix&repos=myproject.git&limit=10"
+```
+
+---
+
+### GET /api/.mcp-internal/health
+
+Checks Gitblit's Lucene index writers and drops any that have closed themselves. Gitblit caches one index writer per repository and never replaces a closed one, so a dead writer makes every search spanning its repository return no hits with a 200. Dropping it lets the next search or index run reopen it. Commits Gitblit tried to index while the writer was dead stay missing from search until that repository's index is rebuilt.
+
+Takes no parameters. Only writers Gitblit has opened since it started are checked.
+
+#### Response
+
+HTTP 200 when no writer is dead, 503 when this call found and dropped dead ones:
+
+```json
+{
+  "healthy": false,
+  "openIndexes": 41,
+  "deadIndexCount": 1,
+  "deadIndexes": [
+    {
+      "repository": "myproject.git",
+      "cause": "AlreadyClosedException: Underlying file changed by an external force at ..."
+    }
+  ]
+}
+```
+
+- `openIndexes` - writers that are open
+- `deadIndexCount` - writers found closed, each dropped by this call
+- `deadIndexes` - the dead writers in repositories the caller can view
+
+The next call returns 200 unless a writer has died again in between.
+
+#### Example
+
+```bash
+curl "http://gitblit:8080/api/.mcp-internal/health"
 ```
 
 ---
