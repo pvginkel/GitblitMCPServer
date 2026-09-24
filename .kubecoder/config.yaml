@@ -6,6 +6,10 @@ repos:
   # server adapts. Worked on and built from here; it carries its own
   # .kubecoder/project.yaml.
   - url: https://github.com/pvginkel/GitblitMCPSupportPlugin
+  # git-sync's deploy repo, whose chart runs Gitblit (gitblit-app) with the
+  # plugin installed. It carries its own .kubecoder/project.yaml, whose verbs
+  # run in `iac` and `aac-tools`.
+  - url: https://github.com/pvginkel/GitSyncDeploy
 
 capabilities:
   github: rw
@@ -13,8 +17,10 @@ capabilities:
 tools:
   - use: python # this repo: Poetry, pytest, Ruff, mypy
   - use: java # GitblitMCPSupportPlugin: OpenJDK and Maven
+  - use: iac # GitSyncDeploy: Helm and Terraform
+  - use: aac-tools # GitSyncDeploy: gen-architecture and arch-validate
 
-# Both repos ship a Dockerfile that Jenkins builds with kaniko; `kaniko` in the
+# This repo and the plugin ship a Dockerfile that Jenkins builds with kaniko; `kaniko` in the
 # dev container is how they are built here.
 imageBuilder: true
 
