@@ -24,7 +24,8 @@ def gb_file_search(
         query: Search query. Supports Lucene syntax: exact phrases ("foo bar"),
                wildcards (foo*), AND/OR operators.
         repos: Repository names to search. If empty, searches all accessible repositories.
-        pathPattern: Filter by file path pattern (e.g., '*.java', 'src/*.py')
+        pathPattern: Filter by file path pattern (e.g., '*.java', 'src/*.py');
+            without a '/', matches the file name at any depth
         branch: Filter by branch (e.g., 'refs/heads/main'). If omitted, searches
             only each repository's default branch.
         limit: Maximum number of results to return. Defaults to 25.

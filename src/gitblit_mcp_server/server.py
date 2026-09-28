@@ -81,9 +81,11 @@ Searches file contents across repositories using Gitblit's Lucene index. Returns
 
 Behavior:
 - Supports Lucene syntax: exact phrases ("foo"), wildcards (foo*), AND/OR operators
+- A dotted identifier is one token: 'b' does not match 'a.b('; search 'a.b' or 'a.b*'
 - If repos is omitted, searches all accessible repositories
 - If branch is omitted, searches only each repository's default branch (avoids duplicate results)
 - If pathPattern is omitted, searches all file types
+- A pathPattern without '/' matches the file name at any depth
 - If limit is omitted, defaults to 25 (max: 100)
 - If contextLines is omitted, defaults to 10 (max: 200)
 - Supports offset-based pagination via 'offset' parameter
@@ -218,7 +220,10 @@ def _register_tools(mcp: FastMCP) -> None:
         query: Annotated[
             str,
             Field(
-                description="Lucene query for file contents. Supports phrases (\"foo\"), wildcards (foo*), AND/OR."
+                description=(
+                    "Lucene query for file contents. Supports phrases (\"foo\"), wildcards (foo*), AND/OR. "
+                    "Dotted identifiers are one token: search 'a.b' or 'a.b*', not 'b'."
+                )
             ),
         ],
         repos: Annotated[
@@ -230,7 +235,10 @@ def _register_tools(mcp: FastMCP) -> None:
         pathPattern: Annotated[
             str | None,
             Field(
-                description="Glob pattern for file paths (e.g., '*.java', 'src/**/*.py'). Omit to search all files."
+                description=(
+                    "Glob pattern for file paths (e.g., '*.java', 'src/**/*.py'). "
+                    "Without '/', matches the file name at any depth. Omit to search all files."
+                )
             ),
         ] = None,
         branch: Annotated[

@@ -292,7 +292,7 @@ Searches file contents (blobs) using Gitblit's Lucene index. Returns matching co
     },
     "pathPattern": {
       "type": "string",
-      "description": "Filter by file path pattern (e.g., '*.java', 'src/*.py')"
+      "description": "Filter by file path pattern (e.g., '*.java', 'src/*.py'). Without a '/', matches the file name at any depth."
     },
     "branch": {
       "type": "string",
@@ -600,6 +600,8 @@ Both search tools support Gitblit's Lucene query syntax:
 | `term1 OR term2` | Either term | `bug OR fix` |
 | `path:pattern` | File path filter | `path:*.java` |
 | `author:name` | Author filter (commits) | `author:john*` |
+
+Gitblit's StandardAnalyzer does not split at a dot, so a dotted identifier is one token: `helmDeploy` does not match `cicd.helmDeploy(`; search `cicd.helmDeploy` or `cicd.helm*`.
 
 ## Error Responses
 

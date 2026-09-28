@@ -227,7 +227,7 @@ Search file contents across repositories using Lucene.
 |-----------|------|----------|---------|-------------|
 | `query` | string | Yes | - | Lucene search query |
 | `repos` | string | No | all | Comma-separated repository names |
-| `pathPattern` | string | No | - | File path pattern filter (e.g., `*.java`) |
+| `pathPattern` | string | No | - | File path pattern filter (e.g., `*.java`). Without a `/`, matches the file name at any depth. |
 | `branch` | string | No | default | Branch filter (e.g., `refs/heads/main`). If omitted, searches only the default branch of each repository. |
 | `limit` | integer | No | 25 | Maximum results (max: 100) |
 | `offset` | integer | No | 0 | Number of results to skip (for pagination) |
