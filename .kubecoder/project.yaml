@@ -41,4 +41,4 @@ projects:
       - cexec python poetry run mypy src
       # The architecture-as-code artifact, validated exactly as
       # Jenkinsfile.architecture validates it. Needs outbound HTTPS.
-      - ./scripts/arch-validate.py docs/architecture/*.yaml
+      - cexec aac-tools arch-validate docs/architecture/*.yaml
