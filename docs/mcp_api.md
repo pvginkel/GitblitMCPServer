@@ -559,6 +559,18 @@ Discovers files by path/name pattern using Git tree walking. Use this to find fi
           }
         }
       }
+    },
+    "skipped": {
+      "type": "array",
+      "description": "Repositories not searched, e.g. because the revision does not resolve there",
+      "items": {
+        "type": "object",
+        "required": ["repository", "reason"],
+        "properties": {
+          "repository": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
     }
   }
 }

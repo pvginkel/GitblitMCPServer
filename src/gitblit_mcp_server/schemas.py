@@ -106,6 +106,13 @@ class FindFilesResult(BaseModel):  # type: ignore[misc]
     files: list[str] = Field(..., description="List of matching file paths")
 
 
+class FindFilesSkipped(BaseModel):  # type: ignore[misc]
+    """A repository that was not searched."""
+
+    repository: str = Field(..., description="Repository name")
+    reason: str = Field(..., description="Why the repository was not searched")
+
+
 class FindFilesResponse(BaseModel):  # type: ignore[misc]
     """Response from find files endpoint."""
 
@@ -113,6 +120,10 @@ class FindFilesResponse(BaseModel):  # type: ignore[misc]
     totalCount: int = Field(..., description="Total number of matching files found")
     limitHit: bool = Field(..., description="Whether results were truncated due to limit")
     results: list[FindFilesResult]
+    skipped: list[FindFilesSkipped] = Field(
+        default_factory=list,
+        description="Repositories not searched, e.g. because the revision did not resolve",
+    )
 
 
 # Error schemas

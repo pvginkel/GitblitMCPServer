@@ -117,6 +117,7 @@ Behavior:
 - Supports offset-based pagination via 'offset' parameter
 - Returns 'totalCount' (total matches) and 'limitHit' (whether more results exist)
 - Results are grouped by repository
+- Returns 'skipped': repositories not searched (e.g. the revision does not resolve there), each with a reason
 - Glob patterns: * matches any chars except /, ** matches any path segments, ? matches single char
 """.strip()
 

@@ -14,6 +14,7 @@ from gitblit_mcp_server.schemas import (
     CommitSearchResponse,
     ErrorResponse,
     FileSearchResponse,
+    FindFilesResponse,
     ListFilesResponse,
     ListReposResponse,
     ReadFileResponse,
@@ -294,6 +295,57 @@ class TestCommitSearchClient:
         assert params["limit"] == 10
         assert params["offset"] == 5
 
+
+
+class TestFindFilesClient:
+    """Tests for GitblitClient.find_files method."""
+
+    def test_find_files_skipped(self, mock_client: GitblitClient) -> None:
+        """Test that repositories the plugin skipped are carried through."""
+        mock_response = {
+            "pattern": "**/Dockerfile",
+            "totalCount": 1,
+            "limitHit": False,
+            "results": [
+                {
+                    "repository": "a.git",
+                    "revision": "refs/heads/main",
+                    "files": ["Dockerfile"],
+                }
+            ],
+            "skipped": [
+                {"repository": "b.git", "reason": "Cannot resolve default branch"}
+            ],
+        }
+
+        with patch("httpx.get") as mock_get:
+            mock_get.return_value = MagicMock(
+                status_code=200, json=lambda: mock_response
+            )
+            result = mock_client.find_files(path_pattern="**/Dockerfile")
+
+        assert isinstance(result, FindFilesResponse)
+        assert len(result.skipped) == 1
+        assert result.skipped[0].repository == "b.git"
+        assert result.skipped[0].reason == "Cannot resolve default branch"
+        assert result.model_dump()["skipped"] == mock_response["skipped"]
+
+    def test_find_files_without_skipped(self, mock_client: GitblitClient) -> None:
+        """Test that a plugin response without skipped parses to an empty list."""
+        with patch("httpx.get") as mock_get:
+            mock_get.return_value = MagicMock(
+                status_code=200,
+                json=lambda: {
+                    "pattern": "*",
+                    "totalCount": 0,
+                    "limitHit": False,
+                    "results": [],
+                },
+            )
+            result = mock_client.find_files(path_pattern="*")
+
+        assert isinstance(result, FindFilesResponse)
+        assert result.skipped == []
 
 class TestErrorHandling:
     """Tests for client error handling."""
