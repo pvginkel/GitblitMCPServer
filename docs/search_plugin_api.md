@@ -233,7 +233,7 @@ Search file contents across repositories using Lucene.
 | `offset` | integer | No | 0 | Number of results to skip (for pagination) |
 | `contextLines` | integer | No | 10 | Lines of context around each match (max: 200) |
 
-The search is automatically scoped to `type:blob` (file content only).
+The search is automatically scoped to `type:blob` (file content only). A query Lucene cannot parse is a `400` naming the parse error.
 
 #### Response
 
@@ -260,7 +260,7 @@ The search is automatically scoped to `type:blob` (file content only).
 }
 ```
 
-Each result includes one or more `chunks` containing the matching code with surrounding context. Line numbers are 1-indexed.
+Each result includes one or more `chunks` containing the matching code with surrounding context. Line numbers are 1-indexed. The chunk is centered on the line matching the most parts of the query (terms, phrases, wildcard terms), the first such line on a tie; a hit no line explains, e.g. on `path:`, gets the start of the file.
 
 #### Example
 
@@ -372,7 +372,7 @@ The search endpoints support Gitblit's Lucene query syntax:
 - `term1 AND term2` - Both terms required
 - `term1 OR term2` - Either term matches
 - `"exact phrase"` - Phrase search
-- `term*` - Prefix wildcard
+- `term*` - Prefix wildcard; `*term` and `te?m` work too
 - `-term` - Exclude term
 
 ### Examples
