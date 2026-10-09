@@ -118,7 +118,8 @@ Behavior:
 - Returns 'totalCount' (total matches) and 'limitHit' (whether more results exist)
 - Results are grouped by repository
 - Returns 'skipped': repositories not searched (e.g. the revision does not resolve there), each with a reason
-- Glob patterns: * matches any chars except /, ** matches any path segments, ? matches single char
+- Glob patterns: * matches any chars except /, ** matches any path segments, ? matches single char, {a,b} matches either alternative (*, **, ? work inside; no nesting)
+- Other glob syntax ([...] classes, \\ escapes, nested or unbalanced braces) is an error naming it, not zero results
 """.strip()
 
 
@@ -325,7 +326,7 @@ def _register_tools(mcp: FastMCP) -> None:
         pathPattern: Annotated[
             str,
             Field(
-                description="Glob pattern to match file paths (e.g., '*.java', '**/Dockerfile', 'src/**/test_*.py')."
+                description="Glob pattern to match file paths (e.g., '*.java', '**/Dockerfile', 'src/**/test_*.py', '**/{CLAUDE.md,README.md}'). Supports *, **, ?, {a,b}."
             ),
         ],
         repos: Annotated[

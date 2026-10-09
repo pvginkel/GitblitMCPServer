@@ -166,11 +166,15 @@ Find files matching a glob pattern across repositories using Git tree walking. M
 | `*` | Any characters except `/` |
 | `**` | Any characters including `/` (directory crossing) |
 | `?` | Single character except `/` |
+| `{a,b}` | Any one of the comma-separated alternatives; `*`, `**` and `?` work inside, braces do not nest |
 | `*.java` | All Java files in root |
 | `**/*.java` | All Java files anywhere |
 | `src/**/test_*.py` | Test files under src/ |
 | `Dockerfile` | Exact filename in root |
 | `**/Dockerfile` | Dockerfile anywhere |
+| `**/{CLAUDE.md,README.md}` | CLAUDE.md or README.md anywhere |
+
+Any other glob syntax — `[...]` character classes, `\` escapes, nested or unbalanced braces — is rejected with a `400` rather than matched literally. `(`, `)`, `!` and `,` outside braces match literally.
 
 #### Response
 
@@ -207,7 +211,7 @@ Find files matching a glob pattern across repositories using Git tree walking. M
 #### Errors
 
 - `400` - Missing `pathPattern` parameter
-- `400` - Invalid glob pattern syntax
+- `400` - Invalid glob pattern syntax: unsupported syntax (`[...]` classes, `\` escapes, nested or unbalanced braces); the message names the construct and its index, e.g. `Invalid glob pattern: character class '[' at index 0 is not supported (supported: *, **, ?, {a,b})`
 
 #### Example
 

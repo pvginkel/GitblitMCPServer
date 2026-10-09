@@ -503,7 +503,7 @@ Discovers files by path/name pattern using Git tree walking. Use this to find fi
   "properties": {
     "pathPattern": {
       "type": "string",
-      "description": "Glob pattern to match file paths (e.g., '*.java', '**/Dockerfile', 'src/**/test_*.py')"
+      "description": "Glob pattern to match file paths (e.g., '*.java', '**/Dockerfile', 'src/**/test_*.py', '**/{CLAUDE.md,README.md}'). Supports *, **, ?, {a,b}."
     },
     "repos": {
       "type": "array",
@@ -583,6 +583,9 @@ Discovers files by path/name pattern using Git tree walking. Use this to find fi
 | `*` | Any characters except `/` | `*.java` matches `Foo.java` |
 | `**` | Any path segments | `**/test.py` matches `src/foo/test.py` |
 | `?` | Single character | `?.txt` matches `a.txt` |
+| `{a,b}` | Any one of the alternatives; `*`, `**` and `?` work inside, braces do not nest | `**/{CLAUDE.md,README.md}` matches both files anywhere |
+
+Any other glob syntax — `[...]` character classes, `\` escapes, nested or unbalanced braces — is an error that names the construct, not an empty result. `(`, `)`, `!` and `,` outside braces match literally.
 
 ### Examples
 
