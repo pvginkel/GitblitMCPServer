@@ -86,10 +86,12 @@ Behavior:
 - If branch is omitted, searches only each repository's default branch (avoids duplicate results)
 - If pathPattern is omitted, searches all file types
 - A pathPattern without '/' matches the file name at any depth
+- pathPattern is checked against at most the 10,000 best hits; the scan stops once offset + limit pass it
 - If limit is omitted, defaults to 25 (max: 100)
 - If contextLines is omitted, defaults to 10 (max: 200)
 - Supports offset-based pagination via 'offset' parameter
-- Returns 'totalCount' (total matches) and 'limitHit' (whether more results exist)
+- Returns 'totalCount' (total matches) and 'limitHit' (whether more results may exist)
+- With pathPattern, limitHit is true when hits were left unchecked; totalCount is then a lower bound
 """.strip()
 
 _COMMIT_SEARCH_DESCRIPTION = """

@@ -239,6 +239,8 @@ Search file contents across repositories using Lucene.
 
 The search is automatically scoped to `type:blob` (file content only). A query Lucene cannot parse is a `400` naming the parse error.
 
+`pathPattern` is checked against the query's hits, best first, until `offset + limit` of them pass it, the hits run out, or 10,000 hits have been checked. With a `pathPattern`, `totalCount` counts the passing hits among those checked; `limitHit` is `true` when hits were left unchecked or passing hits were left out of the page, and `totalCount` is then a lower bound.
+
 #### Response
 
 ```json
