@@ -15,8 +15,8 @@ def gb_read_file(
     """Read the content of a file from a repository.
 
     Reads and returns the content of a file at a specific path and revision.
-    Supports line range parameters for large files. Files larger than 128KB
-    will return an error.
+    Supports line range parameters for large files. A read whose requested
+    lines exceed 128KB will return an error.
 
     Args:
         repo: Repository name (e.g., 'team/project.git')

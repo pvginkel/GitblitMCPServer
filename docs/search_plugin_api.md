@@ -135,7 +135,7 @@ Content is returned with line numbers prefixed in the format `{line_number}: {co
 #### Errors
 
 - `404` - Repository or file not found
-- `400` - File exceeds 128KB size limit
+- `400` - Requested lines exceed 128KB size limit (measured on the file's lines, not the numbered output; a range of a larger file is served)
 
 #### Example
 

@@ -73,7 +73,7 @@ Behavior:
 - If revision is omitted, reads from HEAD of the default branch
 - If startLine/endLine are omitted, reads the entire file
 - Line numbers are 1-indexed
-- Maximum file size is 128KB; larger files return an error
+- At most 128KB of lines per read; more returns an error, so read a larger file in startLine/endLine ranges
 """.strip()
 
 _FILE_SEARCH_DESCRIPTION = """

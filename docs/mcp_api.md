@@ -193,7 +193,7 @@ Reads the content of a file from a repository.
 
 ### Description
 
-Reads and returns the content of a file at a specific path and revision. Supports line range parameters for large files. Files larger than 128KB will return an error.
+Reads and returns the content of a file at a specific path and revision. Supports line range parameters for large files. The 128KB limit applies to the requested lines, so a line range of a larger file is served; a read whose lines exceed 128KB returns an error.
 
 **When to use:**
 - Read source code files
@@ -634,5 +634,5 @@ All tools return errors in this format:
 Common error codes:
 - `NOT_FOUND` - Repository or file not found
 - `INVALID_REQUEST` - Missing required parameters
-- `FILE_TOO_LARGE` - File exceeds 128KB limit
+- `FILE_TOO_LARGE` - Requested lines exceed 128KB limit
 - `ACCESS_DENIED` - No permission to access resource
