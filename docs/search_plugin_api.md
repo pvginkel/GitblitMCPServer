@@ -420,4 +420,4 @@ Access-Control-Allow-Headers: Authorization, Content-Type
 
 5. **Chunk Context**: File search results include configurable context lines around each match (default: 10, max: 200).
 
-6. **Default Branch**: When no branch filter is specified, searches are restricted to each repository's default branch (from `RepositoryModel.HEAD`) to avoid duplicate results from multiple branches.
+6. **Default Branch**: When no branch filter is specified, searches are restricted to each repository's default branch to avoid duplicate results from multiple branches. It is resolved as `/find` resolves it: HEAD's target, or the most recently updated branch when that target does not exist, as in a mirror whose upstream renamed master to main. Not `RepositoryModel.HEAD`, which names a deleted target too, while the index keeps that branch's documents.
