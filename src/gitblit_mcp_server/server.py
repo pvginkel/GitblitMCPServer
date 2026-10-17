@@ -77,7 +77,7 @@ Behavior:
 """.strip()
 
 _FILE_SEARCH_DESCRIPTION = """
-Searches file contents across repositories using Gitblit's Lucene index. Returns matching code snippets with context.
+Searches file contents across repositories using Gitblit's Lucene index. Each result is one file with chunks of context around its matching lines.
 
 Behavior:
 - Supports Lucene syntax: exact phrases ("foo"), wildcards (foo*), AND/OR operators
@@ -89,8 +89,9 @@ Behavior:
 - pathPattern is checked against at most the 10,000 best hits; the scan stops once offset + limit pass it
 - If limit is omitted, defaults to 25 (max: 100)
 - If contextLines is omitted, defaults to 10 (max: 200)
+- A result has up to 10 chunks in line order, each one contextLines window; over 10, those matching the most query terms are kept; read_file shows the rest
 - Supports offset-based pagination via 'offset' parameter
-- Returns 'totalCount' (total matches) and 'limitHit' (whether more results may exist)
+- Returns 'totalCount' (matching files, not matches) and 'limitHit' (whether more results may exist)
 - With pathPattern, limitHit is true when hits were left unchecked; totalCount is then a lower bound
 """.strip()
 
@@ -253,7 +254,7 @@ def _register_tools(mcp: FastMCP) -> None:
         ] = None,
         limit: Annotated[
             int,
-            Field(description="Maximum results. Default: 25, max: 100."),
+            Field(description="Maximum results (files). Default: 25, max: 100."),
         ] = 25,
         offset: Annotated[
             int,
@@ -261,7 +262,7 @@ def _register_tools(mcp: FastMCP) -> None:
         ] = 0,
         contextLines: Annotated[
             int,
-            Field(description="Context lines around matches. Default: 10, max: 200."),
+            Field(description="Context lines around each chunk's match. Default: 10, max: 200."),
         ] = 10,
     ) -> dict[str, Any]:
         if repos:

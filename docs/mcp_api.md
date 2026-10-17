@@ -266,7 +266,7 @@ Searches for content within files across repositories.
 
 ### Description
 
-Searches file contents (blobs) using Gitblit's Lucene index. Returns matching code snippets with surrounding context. Use this for finding code patterns, function definitions, or specific text in files.
+Searches file contents (blobs) using Gitblit's Lucene index. Each result is one file with up to 10 chunks of context around its matching lines, in line order; each chunk is one `contextLines` window, and over 10 the chunks matching the most query terms are kept; `gb_read_file` shows the rest. `totalCount` counts matching files, not matches. Use this for finding code patterns, function definitions, or specific text in files.
 
 **When to use:**
 - Find code containing specific patterns
@@ -300,7 +300,7 @@ Searches file contents (blobs) using Gitblit's Lucene index. Returns matching co
     },
     "limit": {
       "type": "integer",
-      "description": "Maximum number of results to return. Defaults to 25, max 100."
+      "description": "Maximum number of results (files) to return. Defaults to 25, max 100."
     },
     "offset": {
       "type": "integer",
@@ -308,7 +308,7 @@ Searches file contents (blobs) using Gitblit's Lucene index. Returns matching co
     },
     "contextLines": {
       "type": "integer",
-      "description": "Number of context lines to include around each match. Defaults to 10, max 200."
+      "description": "Number of context lines to include around each chunk's match. Defaults to 10, max 200."
     }
   }
 }
@@ -323,7 +323,7 @@ Searches file contents (blobs) using Gitblit's Lucene index. Returns matching co
   "properties": {
     "totalCount": {
       "type": "integer",
-      "description": "Total number of matches found"
+      "description": "Total number of matching files found"
     },
     "limitHit": {
       "type": "boolean",
@@ -349,6 +349,7 @@ Searches file contents (blobs) using Gitblit's Lucene index. Returns matching co
           },
           "chunks": {
             "type": "array",
+            "description": "Up to 10 chunks of context around the file's matching lines, in line order",
             "items": {
               "type": "object",
               "required": ["startLine", "endLine", "content"],

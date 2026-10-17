@@ -56,20 +56,22 @@ class SearchChunk(BaseModel):  # type: ignore[misc]
 
 
 class FileSearchResult(BaseModel):  # type: ignore[misc]
-    """A file search result."""
+    """A file search result: one file and its matching chunks."""
 
     repository: str = Field(..., description="Repository name")
     path: str = Field(..., description="File path within repository")
     branch: str | None = Field(None, description="Branch name")
     commitId: str | None = Field(None, description="Commit SHA")
-    chunks: list[SearchChunk] = Field(..., description="Matching code chunks with context")
+    chunks: list[SearchChunk] = Field(
+        ..., description="Up to 10 chunks of context around the file's matching lines, in line order"
+    )
 
 
 class FileSearchResponse(BaseModel):  # type: ignore[misc]
     """Response from file search endpoint."""
 
     query: str = Field(..., description="The executed search query")
-    totalCount: int = Field(..., description="Total number of matches found")
+    totalCount: int = Field(..., description="Total number of matching files found")
     limitHit: bool = Field(..., description="Whether results were truncated due to limit")
     results: list[FileSearchResult]
 

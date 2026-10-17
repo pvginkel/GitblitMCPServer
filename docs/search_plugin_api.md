@@ -233,11 +233,13 @@ Search file contents across repositories using Lucene.
 | `repos` | string | No | all | Comma-separated repository names |
 | `pathPattern` | string | No | - | File path pattern filter (e.g., `*.java`). Without a `/`, matches the file name at any depth. |
 | `branch` | string | No | default | Branch filter (e.g., `refs/heads/main`). If omitted, searches only the default branch of each repository. |
-| `limit` | integer | No | 25 | Maximum results (max: 100) |
+| `limit` | integer | No | 25 | Maximum results, one per file (max: 100) |
 | `offset` | integer | No | 0 | Number of results to skip (for pagination) |
-| `contextLines` | integer | No | 10 | Lines of context around each match (max: 200) |
+| `contextLines` | integer | No | 10 | Lines of context around each chunk's match (max: 200) |
 
 The search is automatically scoped to `type:blob` (file content only). A query Lucene cannot parse is a `400` naming the parse error.
+
+Each result is one file, and `totalCount` counts files, not matches. A result's `chunks` hold its matching lines in line order, each chunk one window of `contextLines` around its first match line: a match the chunk before already shows adds no chunk, and a window that would overlap the chunk before slides past its end, so chunks never share a line. A file holds at most 10 chunks; over 10, the chunks whose lines match the most parts of the query are kept, the earliest on a tie. A hit with no matching line in its content (e.g. a hit on the path) has one chunk at the top of the file, and a wildcard-only query returns no chunks.
 
 `pathPattern` is checked against the query's hits, best first, until `offset + limit` of them pass it, the hits run out, or 10,000 hits have been checked. With a `pathPattern`, `totalCount` counts the passing hits among those checked; `limitHit` is `true` when hits were left unchecked or passing hits were left out of the page, and `totalCount` is then a lower bound.
 
